@@ -118,7 +118,7 @@ workflow_status:
     name: "Implementation"
     workflows:
       - id: "sprint-planning"
-        status: "required"
+        status: "docs/sprint-artifacts/sprint-status.yaml"
         agent: "sm"
         command: "/bmad:bmm:workflows:sprint-planning"
         description: "Creates sprint plan - subsequent work tracked in sprint-status.yaml"
