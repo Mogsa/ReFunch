@@ -37,7 +37,7 @@ story_location: /Users/morgan/Desktop/Year 3/Diss/Bench/docs/sprint-artifacts
 
 development_status:
   # Epic 1: Project Foundation & Function System
-  epic-1: backlog
+  epic-1: done
   1-1-initialize-project-structure-and-dependencies: done
   1-2-implement-function2d-abstract-base-class: done
   1-3-implement-gaussiantranslation-function: done
