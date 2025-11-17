@@ -41,8 +41,8 @@ development_status:
   1-1-initialize-project-structure-and-dependencies: done
   1-2-implement-function2d-abstract-base-class: done
   1-3-implement-gaussiantranslation-function: done
-  1-4-implement-perfect-score-calculation: backlog
-  1-5-create-basic-function-tests: backlog
+  1-4-implement-perfect-score-calculation: done
+  1-5-create-basic-function-tests: done
   epic-1-retrospective: optional
 
   # Epic 2: Environment & Agent Execution
