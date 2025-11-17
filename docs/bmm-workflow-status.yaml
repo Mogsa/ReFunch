@@ -1,0 +1,124 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-11-17"
+project: "FuncBench"
+project_type: "greenfield"
+selected_track: "bmad-method"
+field_type: "greenfield"
+workflow_path: ".bmad/bmm/workflows/workflow-status/paths/method-greenfield.yaml"
+
+workflow_status:
+  # Phase 0: Discovery (Optional)
+  - phase: 0
+    name: "Discovery (Optional)"
+    workflows:
+      - id: "brainstorm-project"
+        status: "docs/bmm-brainstorming-session-2025-11-17.md"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:brainstorm-project"
+        description: "Creative exploration and ideation"
+
+      - id: "product-brief"
+        status: "skipped"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:product-brief"
+        description: "Strategic product planning"
+
+      - id: "research"
+        status: "skipped"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:research"
+        description: "Technical/competitive analysis"
+
+  # Phase 1: Planning
+  - phase: 1
+    name: "Planning"
+    workflows:
+      - id: "prd"
+        status: "docs/prd.md"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:prd"
+        description: "Product Requirements Document with FRs and NFRs"
+
+      - id: "validate-prd"
+        status: "optional"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:validate-prd"
+        description: "Quality check for PRD completeness"
+
+      - id: "create-epics-and-stories"
+        status: "optional"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+        description: "Optional: Create epic breakdown early (basic structure only)"
+
+      - id: "create-design"
+        status: "conditional"
+        agent: "ux-designer"
+        command: "/bmad:bmm:workflows:create-ux-design"
+        description: "Determined after PRD - user/agent decides if needed"
+
+      - id: "create-epics-and-stories-after-ux"
+        status: "optional"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+        description: "Optional: Create epic breakdown with UX context"
+
+  # Phase 2: Solutioning
+  - phase: 2
+    name: "Solutioning"
+    workflows:
+      - id: "create-architecture"
+        status: "docs/architecture.md"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:architecture"
+        description: "System architecture document"
+
+      - id: "create-epics-and-stories-final"
+        status: "docs/epics.md"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+        description: "Required: Create final epic breakdown with full context (PRD + UX + Architecture)"
+
+      - id: "test-design"
+        status: "recommended"
+        agent: "tea"
+        command: "/bmad:bmm:workflows:test-design"
+        description: "Testability assessment before gate check"
+
+      - id: "validate-architecture"
+        status: "optional"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:validate-architecture"
+        description: "Quality check for architecture completeness"
+
+      - id: "implementation-readiness"
+        status: "docs/implementation-readiness-report-2025-11-17.md"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:implementation-readiness"
+        description: "Validates PRD + UX + Architecture + Epics + Testability cohesion before implementation"
+
+  # Phase 3: Implementation
+  - phase: 3
+    name: "Implementation"
+    workflows:
+      - id: "sprint-planning"
+        status: "required"
+        agent: "sm"
+        command: "/bmad:bmm:workflows:sprint-planning"
+        description: "Creates sprint plan - subsequent work tracked in sprint-status.yaml"

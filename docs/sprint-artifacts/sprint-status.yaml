@@ -1,0 +1,95 @@
+# generated: 2025-11-17
+# project: Bench
+# project_key: funcbench
+# tracking_system: file-system
+# story_location: /Users/morgan/Desktop/Year 3/Diss/Bench/docs/sprint-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Epic tech context created (required before drafting stories)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved and story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Under SM review (via code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', SM reviews, then Dev moves to 'done'
+
+generated: 2025-11-17
+project: Bench
+project_key: funcbench
+tracking_system: file-system
+story_location: /Users/morgan/Desktop/Year 3/Diss/Bench/docs/sprint-artifacts
+
+development_status:
+  # Epic 1: Project Foundation & Function System
+  epic-1: backlog
+  1-1-initialize-project-structure-and-dependencies: backlog
+  1-2-implement-function2d-abstract-base-class: backlog
+  1-3-implement-gaussiantranslation-function: backlog
+  1-4-implement-perfect-score-calculation: backlog
+  1-5-create-basic-function-tests: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Environment & Agent Execution
+  epic-2: backlog
+  2-1-implement-agent-abstract-base-class-and-action-constants: backlog
+  2-2-implement-environment-initialization-and-reset: backlog
+  2-3-implement-observation-generation-with-gradient-sampling: backlog
+  2-4-implement-step-execution-and-action-handling: backlog
+  2-5-implement-episode-history-tracking: backlog
+  2-6-implement-run-method-for-episode-execution: backlog
+  2-7-add-configuration-persistence: backlog
+  2-8-create-environment-unit-tests: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Baseline Agents & Evaluation
+  epic-3: backlog
+  3-1-implement-randomagent-baseline: backlog
+  3-2-implement-greedyagent-baseline: backlog
+  3-3-implement-multi-episode-evaluation-and-learning-curve-tracking: backlog
+  3-4-implement-episode-data-persistence: backlog
+  3-5-create-baseline-agent-tests: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: 2D Visualization System
+  epic-4: backlog
+  4-1-initialize-pygame-window-and-visualizer-class: backlog
+  4-2-render-2d-function-cross-section-at-agent-position: backlog
+  4-3-implement-fog-of-war-visualization: backlog
+  4-4-render-agent-position-indicator-and-gradient-direction: backlog
+  4-5-render-score-display-and-episode-info-hud: backlog
+  4-6-implement-historical-trail-rendering-and-fps-management: backlog
+  4-7-integrate-visualizer-with-environment: backlog
+  4-8-create-visualization-tests-and-configuration: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Human Play & Validation
+  epic-5: backlog
+  5-1-implement-humanagent-with-keyboard-input: backlog
+  5-2-implement-human-score-tracking-and-comparison: backlog
+  5-3-create-human-play-example-and-tests: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Testing & Package Distribution
+  epic-6: backlog
+  6-1-create-reproducibility-test-suite: backlog
+  6-2-create-integration-test-suite: backlog
+  6-3-configure-package-build-and-metadata: backlog
+  6-4-create-comprehensive-readme-and-documentation: backlog
+  6-5-create-example-scripts-and-final-testing: backlog
+  epic-6-retrospective: optional
