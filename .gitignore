@@ -73,3 +73,11 @@ dmypy.json
 # Logs
 *.log
 logs/
+
+# BMad Method - Project Management and Workflow Artifacts
+.bmad/
+.claude/
+docs/sprint-artifacts/
+docs/bmm-workflow-status.yaml
+docs/CRITICAL_PATH_ANALYSIS.md
+*.context.xml
