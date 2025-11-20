@@ -1,0 +1,323 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.8</storyId>
+    <title>Create Environment Unit Tests</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-18</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-8-create-environment-unit-tests.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>comprehensive tests for environment functionality</iWant>
+    <soThat>I can ensure correct episode execution and state management</soThat>
+    <tasks>
+- Audit existing tests from Stories 2.2-2.7 (currently ~100 tests passing)
+- Identify gaps in test coverage for acceptance criteria
+- Organize tests into logical test classes by functionality
+- Add missing tests for: initialization, reset, step actions, return signatures, episode completion, cumulative reward, history tracking, invalid actions
+- Ensure integration tests for complete episodes and deterministic behavior
+- Test new methods from Stories 2.6-2.7 (run(), get_config())
+- Verify pytest fixtures in conftest.py are available and used
+- Run all tests and achieve >80% coverage for environment.py
+- Document test organization and coverage metrics
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**AC1:** Tests for environment initialization validate default parameters, state dict existence, and get_config() accessibility
+
+**AC2:** Tests for reset() validate position/timestep/cumulative_reward initialization, history clearing, and observation dict return
+
+**AC3:** Tests for step() actions validate ACTION_LEFT/STAY/RIGHT behavior and bounds enforcement
+
+**AC4:** Tests for step() return signature validate 4-tuple structure (observation, reward, done, info) with correct types
+
+**AC5:** Tests for episode completion validate done flag behavior (False before limit, True at limit)
+
+**AC6:** Tests for cumulative reward validate accumulation and final sum correctness
+
+**AC7:** Tests for history tracking validate tuple format, length, and reset clearing
+
+**AC8:** Tests for invalid actions validate ValueError raised with helpful messages
+
+**AC9:** All tests use pytest fixtures from conftest.py (gaussian_function, environment, mock_agent)
+
+**AC10:** All tests pass with >80% coverage for environment.py
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- Architecture Documentation -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Testing Patterns</section>
+        <snippet>Fixture-based test setup using conftest.py. Reproducibility testing (same seed = same results). Performance testing with pytest-benchmark or timeit. Edge case coverage (bounds, invalid inputs, episode termination). Test organization by functionality into test classes.</snippet>
+      </doc>
+
+      <!-- Tech Spec Epic 2 -->
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>Story 2.8: Environment Unit Tests</section>
+        <snippet>Comprehensive unit tests for all environment functionality. Test initialization, reset, step, episode completion, cumulative reward, history. Validate error handling (invalid actions). Use pytest fixtures from conftest.py. All tests must pass. Test coverage >80% for environment.py.</snippet>
+      </doc>
+
+      <!-- Previous story completion notes -->
+      <doc>
+        <path>docs/sprint-artifacts/2-5-implement-episode-history-tracking.md</path>
+        <title>Story 2.5: Episode History Tracking</title>
+        <section>Completion Notes</section>
+        <snippet>All 100 tests pass (69 environment + 11 agent + 20 function). TestHistoryTracking class with 10 tests added. conftest.py with fixtures available. Testing infrastructure established.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Existing test infrastructure -->
+      <artifact>
+        <path>tests/test_environment.py</path>
+        <kind>file</kind>
+        <symbol>TestEnvironment</symbol>
+        <lines>1-1085</lines>
+        <reason>Existing environment test suite. Currently has ~100 tests passing. Need to audit, organize, and fill gaps. Many tests already exist from Stories 2.2-2.5.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>file</kind>
+        <symbol>fixtures</symbol>
+        <lines>1-50</lines>
+        <reason>Contains pytest fixtures: gaussian_function, environment, mock_agent. All tests should use these fixtures for consistency.</reason>
+      </artifact>
+
+      <!-- Environment code to test -->
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>class</kind>
+        <symbol>Environment</symbol>
+        <lines>18-430</lines>
+        <reason>Complete Environment class implementation from Stories 2.2-2.7. All methods need comprehensive test coverage.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.__init__</symbol>
+        <lines>81-142</lines>
+        <reason>Initialization method - test default/custom parameters, state dict creation</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.reset</symbol>
+        <lines>143-199</lines>
+        <reason>Reset method from Story 2.2 - test state initialization, observation return</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.step</symbol>
+        <lines>268-387</lines>
+        <reason>Step method from Story 2.4 - test actions, bounds, return signature, episode completion</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.get_history</symbol>
+        <lines>397-429</lines>
+        <reason>History method from Story 2.5 - test return format, copy semantics. Already has comprehensive tests in TestHistoryTracking.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.run</symbol>
+        <lines>TBD</lines>
+        <reason>Run method from Story 2.6 (will be implemented) - test complete episode execution, render modes, exception handling</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.get_config</symbol>
+        <lines>TBD</lines>
+        <reason>Config method from Story 2.7 (will be implemented) - test dict structure, JSON serializability, copy semantics</reason>
+      </artifact>
+
+      <!-- Agent interface for testing -->
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>constants</kind>
+        <symbol>ACTION_LEFT, ACTION_STAY, ACTION_RIGHT</symbol>
+        <lines>11-13</lines>
+        <reason>Action constants used in step() tests. Values: 0, 1, 2.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python version=">=3.9">
+        <package name="numpy" version=">=2.3.5">NumPy for array operations in tests</package>
+        <package name="pytest" version=">=8.0.0" dev="true">Testing framework</package>
+        <stdlib>json - For JSON serialization testing (Story 2.7)</stdlib>
+        <stdlib>timeit - For performance testing</stdlib>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- This story is primarily about ORGANIZING and VALIDATING existing tests, not writing all tests from scratch
+- Many tests already exist from Stories 2.2-2.5 (~100 tests passing)
+- Stories 2.6-2.7 will add their own tests (run(), get_config())
+- Focus on: identifying gaps, organizing into test classes, ensuring all ACs have tests
+- Test coverage target: >80% for environment.py (not 100% - some edge cases hard to trigger)
+- All tests must use fixtures from conftest.py for consistency
+- Test naming convention: test_<method>_<scenario> (e.g., test_reset_clears_history)
+- Test classes organize tests by functionality (TestInitialization, TestReset, TestStep, TestEpisode, etc.)
+- Performance tests use timeit for timing validation (< 2s for episodes, < 1ms for simple methods)
+- Integration tests validate cross-component interaction (complete episodes, determinism)
+- Each AC should map to specific test(s) for validation
+- Regression testing: ensure all existing 100 tests still pass after any changes
+  </constraints>
+
+  <interfaces>
+    <!-- Pytest fixtures to use -->
+    <interface>
+      <name>gaussian_function fixture</name>
+      <kind>pytest fixture</kind>
+      <signature>@pytest.fixture def gaussian_function() -> GaussianTranslation</signature>
+      <path>tests/conftest.py</path>
+    </interface>
+    <interface>
+      <name>environment fixture</name>
+      <kind>pytest fixture</kind>
+      <signature>@pytest.fixture def environment(gaussian_function) -> Environment</signature>
+      <path>tests/conftest.py</path>
+    </interface>
+    <interface>
+      <name>mock_agent fixture</name>
+      <kind>pytest fixture</kind>
+      <signature>@pytest.fixture def mock_agent() -> Agent</signature>
+      <path>tests/conftest.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Testing standards from Architecture and established patterns:
+- Use pytest framework with fixtures from conftest.py
+- Test classes organized by functionality (TestInitialization, TestReset, TestStep, TestEpisode, TestHistory, TestConfig, TestRun)
+- Test naming: test_<method>_<scenario> (e.g., test_step_action_left)
+- NumPy-style docstrings on test methods explaining what is being tested
+- Performance tests use timeit for timing validation
+- Edge case coverage: bounds enforcement, invalid inputs, episode termination
+- Integration tests validate cross-component interaction
+- Regression testing: all existing tests must still pass
+- Coverage target: >80% line coverage for environment.py
+- Use pytest-cov for coverage measurement: pytest --cov=funcbench.environment
+    </standards>
+
+    <locations>
+tests/test_environment.py - Main test file (currently ~1085 lines, ~100 tests)
+tests/conftest.py - Pytest fixtures
+    </locations>
+
+    <ideas>
+**Test Organization Structure:**
+
+Class TestInitialization:
+- test_environment_default_parameters
+- test_environment_custom_parameters
+- test_environment_state_dict_structure
+- test_environment_stores_function_reference
+
+Class TestReset:
+- test_reset_position_to_zero
+- test_reset_timestep_to_zero
+- test_reset_cumulative_reward_to_zero
+- test_reset_clears_history
+- test_reset_returns_observation_dict
+- test_reset_observation_structure
+- test_reset_multiple_calls
+
+Class TestStep:
+- test_step_action_left_decreases_position
+- test_step_action_stay_unchanged_position
+- test_step_action_right_increases_position
+- test_step_bounds_enforcement_left
+- test_step_bounds_enforcement_right
+- test_step_custom_step_size
+- test_step_returns_four_tuple
+- test_step_observation_dict_structure
+- test_step_reward_type_float
+- test_step_done_type_bool
+- test_step_info_dict_structure
+- test_step_invalid_action_raises_error
+
+Class TestEpisode:
+- test_episode_done_false_before_length
+- test_episode_done_true_at_length
+- test_episode_timestep_increments
+- test_episode_cumulative_reward_accumulates
+- test_episode_cumulative_reward_sum_matches
+
+Class TestHistory (may already exist from Story 2.5):
+- test_history_entry_tuple_format
+- test_history_length_equals_steps
+- test_history_cleared_on_reset
+- test_history_content_correctness
+
+Class TestObservation (may already exist from Story 2.3):
+- test_observation_gradient_samples_count
+- test_observation_within_radius
+- test_observation_bounds_clipping
+
+Class TestIntegration:
+- test_complete_episode_100_steps
+- test_multiple_sequential_episodes
+- test_deterministic_episode_same_seed
+- test_environment_with_mock_agent
+
+**Gap Analysis:**
+Based on Story 2.5 completion notes, existing tests cover:
+- Environment initialization (Story 2.2)
+- Reset functionality (Story 2.2)
+- Observation generation (Story 2.3)
+- Step execution (Story 2.4 - 31 tests added)
+- History tracking (Story 2.5 - 10 tests added)
+
+Likely gaps to fill:
+- Integration tests for complete episodes
+- Deterministic episode tests (reproducibility)
+- Tests for run() method (Story 2.6 will add these)
+- Tests for get_config() method (Story 2.7 will add these)
+
+**Coverage Target:**
+- Current: Unknown, but likely good given 100 tests passing
+- Goal: >80% line coverage for environment.py
+- Measurement: pytest --cov=funcbench.environment --cov-report=html
+    </ideas>
+  </tests>
+
+  <existingTests>
+    <summary>
+From Story 2.5 completion notes:
+- Total tests passing: 100 (69 environment + 11 agent + 20 function)
+- Environment test file: tests/test_environment.py (1085 lines)
+- Test classes: TestEnvironment, TestHistoryTracking
+- Fixtures available: conftest.py with gaussian_function, environment, mock_agent
+- Recent additions (Story 2.4): 31 tests for step() method
+- Recent additions (Story 2.5): 10 tests for history tracking
+    </summary>
+
+    <testClasses>
+- TestEnvironment: Main class with initialization, reset, observation, step tests
+- TestHistoryTracking: 10 tests for episode history (Story 2.5)
+    </testClasses>
+
+    <coverage>
+Story 2.4 validated step() performance (< 10ms)
+Story 2.5 validated history performance (< 1ms per append)
+Overall coverage unknown but likely good given test count
+This story should measure and document coverage percentage
+    </coverage>
+  </existingTests>
+</story-context>

@@ -1,0 +1,245 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.7</storyId>
+    <title>Add Configuration Persistence</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-18</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-7-add-configuration-persistence.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a researcher</asA>
+    <iWant>to access environment configuration parameters</iWant>
+    <soThat>I can save experiment settings for reproducibility</soThat>
+    <tasks>
+- Implement get_config() method on Environment class with dict return type
+- Collect environment configuration parameters (episode_length, observation_radius, n_gradient_samples, step_size, bounds)
+- Collect function configuration via function.get_config() if available
+- Return configuration copy (not reference to internals)
+- Ensure JSON serializability of all config values
+- Add comprehensive NumPy-style docstring with examples
+- Implement GaussianTranslation.get_config() to support function configuration
+- Add unit tests for get_config() (returns dict, contains required keys, values correct, JSON-serializable, returns copy)
+- Integration tests with function configuration
+- Validate configuration completeness enables environment reconstruction
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**AC1:** get_config() returns dict containing: episode_length, observation_radius, n_gradient_samples, step_size, function_params, bounds
+
+**AC2:** function_params includes function-specific configuration (velocity, sigma, amplitude, mean_start, bounds, seed from GaussianTranslation)
+
+**AC3:** get_config() returns copy of configuration (not reference to internals) - modifications don't affect environment
+
+**AC4:** Configuration dict is JSON-serializable for saving experiments (all values are int/float/str/bool/list/dict/None)
+
+**AC5:** Method completes in < 1ms (simple dict construction, no heavy operations)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- Architecture Documentation -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Reproducibility NFR6-10</section>
+        <snippet>NFR6-10: Reproducibility requirements. get_config() enables reproducible experiments. JSON-serializable format for easy storage. Return copies to prevent external mutation. Include all parameters needed to reconstruct environment. Configuration saved alongside episode data enables exact reproduction.</snippet>
+      </doc>
+
+      <!-- Tech Spec Epic 2 -->
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>Story 2.7: Configuration Persistence</section>
+        <snippet>get_config() returns dict with episode_length, observation_radius, n_gradient_samples, step_size, function_params, bounds. function_params includes function-specific configuration. Returns copy of configuration (not reference). Configuration dict is JSON-serializable. Method completes in < 1ms.</snippet>
+      </doc>
+
+      <!-- Epics Breakdown -->
+      <doc>
+        <path>docs/epics.md</path>
+        <title>FuncBench - Epic Breakdown</title>
+        <section>Story 2.7</section>
+        <snippet>As a researcher, I want to access environment configuration parameters, So that I can save experiment settings for reproducibility. Prerequisites: Story 2.2 (Environment initialization).</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Environment class - where get_config() will be added -->
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>class</kind>
+        <symbol>Environment</symbol>
+        <lines>18-430</lines>
+        <reason>Main class where get_config() method will be added. Already has __init__ with configuration parameters stored as attributes.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.__init__</symbol>
+        <lines>81-142</lines>
+        <reason>Constructor stores configuration parameters as attributes: episode_length, observation_radius, n_gradient_samples, step_size. get_config() will read these.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.get_history</symbol>
+        <lines>397-429</lines>
+        <reason>Similar method that returns copy of internal state using list() constructor. Copy pattern to follow for get_config().</reason>
+      </artifact>
+
+      <!-- Function2D and GaussianTranslation -->
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>class</kind>
+        <symbol>Function2D</symbol>
+        <lines>12-99</lines>
+        <reason>Abstract base class for functions. May want to add get_config() as optional method (not abstract since not all functions need it).</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>class</kind>
+        <symbol>GaussianTranslation</symbol>
+        <lines>101-268</lines>
+        <reason>Concrete function implementation. Need to add get_config() method here to return function parameters. Currently DOES NOT have get_config().</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>method</kind>
+        <symbol>GaussianTranslation.__init__</symbol>
+        <lines>161-181</lines>
+        <reason>Constructor stores function parameters: mean_start, velocity, sigma, amplitude, bounds, seed. get_config() will return these.</reason>
+      </artifact>
+
+      <!-- Test infrastructure -->
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>file</kind>
+        <symbol>fixtures</symbol>
+        <lines>1-50</lines>
+        <reason>Contains pytest fixtures: gaussian_function, environment. Use these in get_config() tests.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_environment.py</path>
+        <kind>file</kind>
+        <symbol>TestEnvironment</symbol>
+        <lines>1-1085</lines>
+        <reason>Existing environment tests. Add new TestConfigPersistence class for get_config() tests.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python version=">=3.9">
+        <package name="numpy" version=">=2.3.5">NumPy for float64 types in configuration</package>
+        <package name="pytest" version=">=8.0.0" dev="true">Testing framework for unit tests</package>
+        <stdlib>json - For JSON serialization testing</stdlib>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- get_config() must return NEW dict each time (not stored as instance attribute)
+- Returned dict must be independent copy - modifications don't affect environment
+- All values must be JSON-serializable (int, float, str, bool, list, dict, None)
+- Convert NumPy types to Python types if needed (np.float64 -> float)
+- Tuples are JSON-serializable, so bounds tuple is okay
+- function_params may be empty dict {} if function doesn't have get_config()
+- Check hasattr(self.function, 'get_config') before calling
+- Handle missing get_config() gracefully (use empty dict, don't raise exception)
+- Include ALL constructor parameters in config dict for complete reproducibility
+- NumPy-style docstrings with comprehensive documentation
+- Type hint: -> dict on method signature
+- Performance requirement: < 1ms (simple dict construction)
+- Follow copy semantics pattern from get_history() (Story 2.5)
+- GaussianTranslation.get_config() should return all constructor parameters
+- Function get_config() is NOT abstractmethod - optional for Function2D subclasses
+  </constraints>
+
+  <interfaces>
+    <!-- Environment.__init__ parameters to include in config -->
+    <interface>
+      <name>Environment.__init__</name>
+      <kind>method signature</kind>
+      <signature>def __init__(self, function: Function2D, episode_length: int = 1000, observation_radius: float = 5.0, n_gradient_samples: int = 20, step_size: float = 1.0, render_mode: bool = False)</signature>
+      <path>src/funcbench/environment.py:81-142</path>
+    </interface>
+
+    <!-- GaussianTranslation.__init__ parameters to include in function config -->
+    <interface>
+      <name>GaussianTranslation.__init__</name>
+      <kind>method signature</kind>
+      <signature>def __init__(self, mean_start: float = -10.0, velocity: float = 0.1, sigma: float = 1.0, amplitude: float = 1.0, bounds: tuple[float, float] = (-20.0, 20.0), seed: int | None = None)</signature>
+      <path>src/funcbench/function.py:161-181</path>
+    </interface>
+
+    <!-- get_config() methods to implement -->
+    <interface>
+      <name>Environment.get_config</name>
+      <kind>method signature (to implement)</kind>
+      <signature>def get_config(self) -> dict</signature>
+      <path>src/funcbench/environment.py (new method)</path>
+    </interface>
+    <interface>
+      <name>GaussianTranslation.get_config</name>
+      <kind>method signature (to implement)</kind>
+      <signature>def get_config(self) -> dict</signature>
+      <path>src/funcbench/function.py (new method)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Testing standards from Architecture and existing tests:
+- Use pytest framework with fixtures from conftest.py
+- Test classes organized by functionality (e.g., TestConfigPersistence)
+- Test naming: test_<method>_<scenario>
+- NumPy-style docstrings on test methods
+- Edge case coverage: missing function.get_config(), JSON serialization, copy semantics
+- Performance tests use timeit for < 1ms validation
+- All tests must pass before story completion
+- Test coverage target: >95% for new get_config() methods
+    </standards>
+
+    <locations>
+tests/test_environment.py - Add new TestConfigPersistence class
+tests/test_function.py - Add tests for GaussianTranslation.get_config()
+tests/conftest.py - Use existing fixtures
+    </locations>
+
+    <ideas>
+**Unit Tests for Environment.get_config():**
+1. test_get_config_returns_dict - Verify return type is dict
+2. test_get_config_contains_required_keys - Verify all 6 keys present (episode_length, observation_radius, n_gradient_samples, step_size, function_params, bounds)
+3. test_get_config_values_correct - Verify values match environment settings
+4. test_get_config_returns_copy - Verify returned dict is copy (modify returned dict, check environment not affected)
+5. test_get_config_multiple_calls_same_values - Verify multiple calls return equivalent dicts
+
+**JSON Serialization Tests:**
+6. test_get_config_json_serializable - Verify json.dumps(env.get_config()) succeeds
+7. test_get_config_json_round_trip - Verify json.loads(json.dumps(config)) preserves values
+
+**Performance Tests:**
+8. test_get_config_performance - Verify completes in < 1ms using timeit
+
+**Function Configuration Tests:**
+9. test_get_config_function_params_included - Verify function_params in config
+10. test_get_config_with_gaussian - Verify function_params contains velocity, sigma, amplitude, etc.
+11. test_get_config_without_function_get_config - Mock function without get_config(), verify function_params is empty dict
+
+**Unit Tests for GaussianTranslation.get_config():**
+12. test_gaussian_get_config_returns_dict - Verify returns dict
+13. test_gaussian_get_config_contains_parameters - Verify mean_start, velocity, sigma, amplitude, bounds, seed
+14. test_gaussian_get_config_values_correct - Verify values match constructor params
+15. test_gaussian_get_config_json_serializable - Verify JSON serialization works
+
+Map to ACs:
+- AC1 (dict structure): Tests 1, 2, 3
+- AC2 (function_params): Tests 9, 10, 12, 13, 14
+- AC3 (copy semantics): Tests 4, 5
+- AC4 (JSON serializable): Tests 6, 7, 15
+- AC5 (performance): Test 8
+    </ideas>
+  </tests>
+</story-context>

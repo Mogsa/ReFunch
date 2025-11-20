@@ -1,0 +1,220 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>1</storyId>
+    <title>Implement RandomAgent Baseline</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-18</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/3-1-implement-randomagent-baseline.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>researcher</asA>
+    <iWant>a random agent that takes actions uniformly at random</iWant>
+    <soThat>I can establish the lower bound of performance (no learning baseline)</soThat>
+    <tasks>
+      <task id="1" status="pending">
+        <title>Implement RandomAgent Class</title>
+        <subtasks>
+          <subtask>Add RandomAgent class to src/funcbench/agent.py</subtask>
+          <subtask>Inherit from Agent abstract base class</subtask>
+          <subtask>Implement __init__ with optional seed parameter</subtask>
+          <subtask>Initialize NumPy random number generator</subtask>
+        </subtasks>
+      </task>
+      <task id="2" status="pending">
+        <title>Implement get_action Method</title>
+        <subtasks>
+          <subtask>Implement get_action(observation: dict) -> int</subtask>
+          <subtask>Return random integer from {0, 1, 2}</subtask>
+          <subtask>Use self.rng.integers(0, 3) for uniform sampling</subtask>
+          <subtask>Ignore observation (random baseline doesn't use it)</subtask>
+        </subtasks>
+      </task>
+      <task id="3" status="pending">
+        <title>Add Documentation</title>
+        <subtasks>
+          <subtask>Write comprehensive NumPy-style docstring for RandomAgent</subtask>
+          <subtask>Document seed parameter and reproducibility</subtask>
+          <subtask>Include usage examples in docstring</subtask>
+          <subtask>Explain purpose as no-learning baseline</subtask>
+        </subtasks>
+      </task>
+      <task id="4" status="pending">
+        <title>Create Tests</title>
+        <subtasks>
+          <subtask>Add tests to tests/test_agent.py or create new test file</subtask>
+          <subtask>Test reproducibility with same seed</subtask>
+          <subtask>Test different sequences with different seeds</subtask>
+          <subtask>Test action distribution uniformity</subtask>
+          <subtask>Verify actions are in valid range [0, 1, 2]</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>Agent abstract base class from Story 2.1</given>
+      <when>I create RandomAgent class in src/funcbench/agent.py</when>
+      <then>it inherits from Agent</then>
+    </criterion>
+    <criterion id="AC2">
+      <description>__init__ accepts optional seed parameter with type hint: seed: int | None = None - Random seed for reproducible random actions</description>
+    </criterion>
+    <criterion id="AC3">
+      <description>__init__ initializes random number generator: If seed provided use np.random.default_rng(seed), if seed is None use np.random.default_rng() (non-deterministic)</description>
+    </criterion>
+    <criterion id="AC4">
+      <description>get_action(observation: dict) returns random integer from {0, 1, 2} (left, stay, right) using self.rng.integers(0, 3) for sampling</description>
+    </criterion>
+    <criterion id="AC5">
+      <description>Random actions are uniformly distributed (equal probability for each action)</description>
+    </criterion>
+    <criterion id="AC6">
+      <description>With same seed, agent produces identical action sequences across runs</description>
+    </criterion>
+    <criterion id="AC7">
+      <description>Class includes NumPy-style docstring explaining random baseline purpose</description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 3: Baseline Agents & Evaluation</title>
+        <section>Story 3.1: Implement RandomAgent Baseline</section>
+        <snippet>RandomAgent establishes floor performance baseline. Uses np.random.default_rng() for reproducible random action generation. Agent ignores observation completely and samples uniformly from {0, 1, 2}.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Reproducibility</title>
+        <section>Reproducibility Testing Patterns</section>
+        <snippet>Same seed produces identical results across runs. Use np.random.default_rng(seed) for new NumPy random API. Test shows RandomAgent(seed=42) must produce identical action sequences.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Agent System</title>
+        <section>Agent Interface (FR8-15)</section>
+        <snippet>Agent ABC in agent.py. RandomAgent implements get_action() returning int from {0, 1, 2}. Agent receives observation dict but random baseline ignores it completely.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Testing Standards</title>
+        <section>Testing Patterns</section>
+        <snippet>Use pytest with fixtures. Reproducibility tests critical for research use. Validate deterministic behavior with seeds, uniform distribution over many samples.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>module</kind>
+        <symbol>Agent (abstract base class)</symbol>
+        <lines>16-112</lines>
+        <reason>Base class that RandomAgent must inherit from. Defines get_action() abstract method with observation dict parameter.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>constants</kind>
+        <symbol>ACTION_LEFT, ACTION_STAY, ACTION_RIGHT</symbol>
+        <lines>14-16</lines>
+        <reason>Action constants (0, 1, 2) that RandomAgent.get_action() must return.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_agent.py</path>
+        <kind>test</kind>
+        <symbol>TestAgentInterface</symbol>
+        <lines>28-112</lines>
+        <reason>Existing tests for Agent interface. RandomAgent tests should follow similar patterns for consistency.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>test_fixtures</kind>
+        <symbol>mock_agent</symbol>
+        <lines>18-30</lines>
+        <reason>Example pattern for implementing Agent subclass. Shows correct signature and inheritance pattern.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="numpy" version=">=2.3.5">NumPy random number generator (np.random.default_rng)</package>
+        <package name="pytest" version=">=8.0.0" dev="true">Testing framework</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Must use np.random.default_rng() for random number generation, NOT legacy np.random.seed()</constraint>
+    <constraint>Must inherit from Agent abstract base class</constraint>
+    <constraint>Must implement get_action(observation: dict) -> int method</constraint>
+    <constraint>Return value must be in {0, 1, 2} corresponding to ACTION_LEFT, ACTION_STAY, ACTION_RIGHT</constraint>
+    <constraint>Must include NumPy-style docstring with Parameters, Returns, Examples sections</constraint>
+    <constraint>Follow project naming: PascalCase for RandomAgent class, snake_case for methods</constraint>
+    <constraint>Type hints required for all parameters and return values</constraint>
+    <constraint>Seed parameter must enable deterministic reproducibility for scientific research</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>Agent.get_action</name>
+      <kind>abstract_method</kind>
+      <signature>def get_action(self, observation: dict) -> int</signature>
+      <path>src/funcbench/agent.py:42</path>
+      <description>Must be implemented by RandomAgent. Takes observation dict, returns action code 0/1/2.</description>
+    </interface>
+    <interface>
+      <name>RandomAgent.__init__</name>
+      <kind>constructor</kind>
+      <signature>def __init__(self, seed: int | None = None)</signature>
+      <description>Initialize RandomAgent with optional seed for reproducibility.</description>
+    </interface>
+    <interface>
+      <name>np.random.Generator.integers</name>
+      <kind>numpy_method</kind>
+      <signature>rng.integers(low, high, size=None)</signature>
+      <description>Use for uniform random sampling: self.rng.integers(0, 3) returns 0, 1, or 2.</description>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Use pytest framework with fixtures from conftest.py. Follow existing test patterns in test_agent.py. Test classes use TestClassName format. Validate deterministic behavior with seeds, type correctness, and statistical properties (uniform distribution). All tests must pass consistently across multiple runs.</standards>
+    <locations>
+      <location>tests/test_agent.py</location>
+      <location>tests/conftest.py (for fixtures if needed)</location>
+    </locations>
+    <ideas>
+      <test id="T1" maps_to="AC2,AC3,AC6">
+        <name>test_random_agent_reproducibility</name>
+        <description>Verify same seed produces identical action sequences across multiple runs. Create two RandomAgent instances with seed=42, call get_action() 100 times each, assert sequences match exactly.</description>
+      </test>
+      <test id="T2" maps_to="AC2,AC3,AC6">
+        <name>test_different_seeds_produce_different_sequences</name>
+        <description>Verify different seeds produce different action sequences. Create RandomAgent(seed=42) and RandomAgent(seed=99), collect 100 actions each, assert sequences differ.</description>
+      </test>
+      <test id="T3" maps_to="AC4,AC5">
+        <name>test_actions_in_valid_range</name>
+        <description>Verify all actions are in {0, 1, 2}. Generate 1000 random actions, assert each is either 0, 1, or 2.</description>
+      </test>
+      <test id="T4" maps_to="AC5">
+        <name>test_uniform_distribution</name>
+        <description>Verify uniform distribution of actions. Generate 3000 actions (large N), count occurrences of each action, assert each appears approximately 1000 times (±10% tolerance for randomness).</description>
+      </test>
+      <test id="T5" maps_to="AC1,AC4">
+        <name>test_random_agent_inherits_from_agent</name>
+        <description>Verify RandomAgent is instance of Agent. Create agent = RandomAgent(), assert isinstance(agent, Agent).</description>
+      </test>
+      <test id="T6" maps_to="AC4">
+        <name>test_get_action_signature</name>
+        <description>Verify get_action has correct type hints. Check parameter annotation is dict and return annotation is int using inspect.signature().</description>
+      </test>
+      <test id="T7" maps_to="AC7">
+        <name>test_random_agent_has_docstring</name>
+        <description>Verify RandomAgent and get_action have comprehensive docstrings. Check docstring exists, length > 50 chars, mentions "random", "baseline", "seed", "reproducibility".</description>
+      </test>
+      <test id="T8" maps_to="AC4">
+        <name>test_ignores_observation</name>
+        <description>Verify RandomAgent ignores observation dict. Create agent with seed, call get_action() with different observations, assert actions depend only on seed not observation content.</description>
+      </test>
+    </ideas>
+  </tests>
+</story-context>

@@ -46,21 +46,21 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Environment & Agent Execution
-  epic-2: backlog
-  2-1-implement-agent-abstract-base-class-and-action-constants: backlog
-  2-2-implement-environment-initialization-and-reset: backlog
-  2-3-implement-observation-generation-with-gradient-sampling: backlog
-  2-4-implement-step-execution-and-action-handling: backlog
-  2-5-implement-episode-history-tracking: backlog
-  2-6-implement-run-method-for-episode-execution: backlog
-  2-7-add-configuration-persistence: backlog
-  2-8-create-environment-unit-tests: backlog
+  epic-2: contexted
+  2-1-implement-agent-abstract-base-class-and-action-constants: done
+  2-2-implement-environment-initialization-and-reset: done
+  2-3-implement-observation-generation-with-gradient-sampling: done
+  2-4-implement-step-execution-and-action-handling: done
+  2-5-implement-episode-history-tracking: done
+  2-6-implement-run-method-for-episode-execution: done
+  2-7-add-configuration-persistence: done
+  2-8-create-environment-unit-tests: ready-for-dev
   epic-2-retrospective: optional
 
   # Epic 3: Baseline Agents & Evaluation
   epic-3: backlog
-  3-1-implement-randomagent-baseline: backlog
-  3-2-implement-greedyagent-baseline: backlog
+  3-1-implement-randomagent-baseline: done
+  3-2-implement-greedyagent-baseline: done
   3-3-implement-multi-episode-evaluation-and-learning-curve-tracking: backlog
   3-4-implement-episode-data-persistence: backlog
   3-5-create-baseline-agent-tests: backlog

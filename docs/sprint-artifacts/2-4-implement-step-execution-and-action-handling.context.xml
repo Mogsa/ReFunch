@@ -1,0 +1,308 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.4</storyId>
+    <title>Implement Step Execution and Action Handling</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-18</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-4-implement-step-execution-and-action-handling.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>researcher</asA>
+    <iWant>the environment to execute agent actions and advance episode state</iWant>
+    <soThat>agents can interact with the temporal function and accumulate rewards</soThat>
+    <tasks>
+      - Implement action validation (AC: #1)
+        - Check if action is in [0, 1, 2]
+        - Raise ValueError with clear message if invalid
+        - Use exact error message format from Architecture specification
+        - Add type hint: action: int
+
+      - Implement position update logic (AC: #2)
+        - Import ACTION_LEFT, ACTION_STAY, ACTION_RIGHT from agent module
+        - Implement conditional logic for each action type:
+          - ACTION_LEFT (0): self.state['position'] -= self.step_size
+          - ACTION_STAY (1): position unchanged (no operation)
+          - ACTION_RIGHT (2): self.state['position'] += self.step_size
+        - Apply np.clip to clamp position to self.function.bounds
+        - Ensure position remains float64 type
+
+      - Implement reward calculation (AC: #3)
+        - Call self.function.evaluate() at new position and self.state['timestep']
+        - Extract scalar reward value from result (handle array return)
+        - Ensure reward is float (float64)
+        - Increment self.state['cumulative_reward'] by step reward
+        - Maintain float64 precision for cumulative_reward
+
+      - Implement timestep advancement and done flag (AC: #4)
+        - Increment self.state['timestep'] by 1
+        - Calculate done = (self.state['timestep'] >= self.episode_length)
+        - Ensure done is boolean type
+
+      - Generate observation and build info dict (AC: #5, #6)
+        - Call self._get_observation() to generate observation dict
+        - Build info dict with cumulative_reward and perfect_score
+        - Get perfect_score from self.function.get_perfect_score(self.episode_length)
+        - Ensure info dict keys match specification exactly
+
+      - Return 4-tuple in correct order (AC: #5)
+        - Return (observation, reward, done, info)
+        - Add type hint: -> tuple[dict, float, bool, dict]
+        - Verify return signature matches Architecture specification
+
+      - Add NumPy-style docstring (AC: #7, Architecture requirement)
+        - Short one-line summary
+        - Detailed description of behavior
+        - Parameters section documenting action parameter
+        - Returns section documenting 4-tuple elements
+        - Raises section documenting ValueError for invalid action
+        - Examples section showing usage
+
+      - Validate performance requirements (AC: #8)
+        - Profile step() execution time using timeit
+        - Ensure < 10ms per step call (including observation generation)
+        - Verify no unnecessary object creation or copying
+
+      - Update and create tests (AC: #1-8)
+        - Add test_step_action_validation to verify ValueError raised
+        - Add test_step_action_left to verify position decrease
+        - Add test_step_action_stay to verify position unchanged
+        - Add test_step_action_right to verify position increase
+        - Add test_step_position_clamping to verify bounds enforcement
+        - Add test_step_reward_calculation to verify reward at new position
+        - Add test_step_cumulative_reward to verify accumulation
+        - Add test_step_timestep_advancement to verify increment
+        - Add test_step_done_flag to verify done = True at episode end
+        - Add test_step_return_signature to verify 4-tuple structure
+        - Add test_step_info_dict_structure to verify keys
+        - Add test_step_performance to verify < 10ms execution
+        - Run all tests and ensure they pass
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC1: Action Validation
+    - Validates action is 0, 1, or 2
+    - Raises ValueError for invalid actions
+    - Error message: "Invalid action {action}. Must be 0 (left), 1 (stay), or 2 (right)"
+
+    AC2: Position Update
+    - ACTION_LEFT (0): position decreases by step_size
+    - ACTION_STAY (1): position unchanged
+    - ACTION_RIGHT (2): position increases by step_size
+    - Position clamped to function.bounds using np.clip
+
+    AC3: Reward Calculation
+    - Evaluates function at new position and current timestep
+    - Returns scalar float reward value
+    - Increments cumulative_reward by step reward
+    - Uses float64 precision
+
+    AC4: Timestep Advancement
+    - Increments timestep by 1 after action execution
+    - done flag = True when timestep >= episode_length
+    - done flag = False otherwise
+
+    AC5: Return Signature
+    - step() returns 4-tuple: (observation, reward, done, info)
+    - observation: dict from _get_observation() with updated state
+    - reward: float (step reward value)
+    - done: bool (episode completion flag)
+    - info: dict with cumulative_reward and perfect_score keys
+
+    AC6: Info Dictionary
+    - Contains 'cumulative_reward': float (running total)
+    - Contains 'perfect_score': float (from function.get_perfect_score(episode_length))
+
+    AC7: State Atomicity
+    - All state updates are atomic (happen within step() method)
+
+    AC8: Performance
+    - step() completes in < 10ms (including observation generation)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>AC5: Step Execution</section>
+        <snippet>Validates action is 0, 1, or 2 (raises ValueError otherwise). Position updates: LEFT decreases, STAY unchanged, RIGHT increases by step_size. Position clamped to function bounds using np.clip. Reward calculated at new position and current timestep. Returns 4-tuple: (observation, reward, done, info). done=True when timestep >= episode_length.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Environment API Contract</section>
+        <snippet>step() must return 4-tuple: (observation, reward, done, info). Gym-like API pattern per ADR-004. Action validation with specific ValueError message format. State updates must be atomic. Type hints required for all method signatures.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Consistency Rules - Action Space</section>
+        <snippet>ALWAYS use these integer codes: ACTION_LEFT = 0, ACTION_STAY = 1, ACTION_RIGHT = 2. Action space uses exact integer codes from Architecture specification.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/2-3-implement-observation-generation-with-gradient-sampling.md</path>
+        <title>Story 2.3 Completion</title>
+        <section>Dev Agent Record - Completion Notes</section>
+        <snippet>Environment state dict available: position (float64), timestep (int), cumulative_reward (float64), history (list). _get_observation() fully implemented (lines 182-265). Use self.function.evaluate() for reward calculation. Use self.function.bounds for np.clip. Float64 precision pattern established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>class</kind>
+        <symbol>Environment</symbol>
+        <lines>17-266</lines>
+        <reason>Core Environment class where step() method will be added. Contains __init__(), reset(), and _get_observation() already implemented.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.__init__</symbol>
+        <lines>83-124</lines>
+        <reason>Initialization sets up episode_length, step_size, function reference, and state dict needed by step()</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment._get_observation</symbol>
+        <lines>182-265</lines>
+        <reason>Observation generation method that step() must call after updating state. Returns observation dict with required keys.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>constants</kind>
+        <symbol>ACTION_LEFT, ACTION_STAY, ACTION_RIGHT</symbol>
+        <lines>N/A</lines>
+        <reason>Action constants defined in Story 2.1 that need to be imported for use in step() method</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>method</kind>
+        <symbol>Function2D.evaluate</symbol>
+        <lines>N/A</lines>
+        <reason>Abstract method from Epic 1 used to calculate reward at new position</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>method</kind>
+        <symbol>Function2D.get_perfect_score</symbol>
+        <lines>N/A</lines>
+        <reason>Method from Epic 1 used to populate info dict with perfect_score value</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>property</kind>
+        <symbol>Function2D.bounds</symbol>
+        <lines>N/A</lines>
+        <reason>Tuple from Epic 1 used for position clamping with np.clip</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_environment.py</path>
+        <kind>file</kind>
+        <symbol>test_environment</symbol>
+        <lines>N/A</lines>
+        <reason>Test file where new step() tests will be added. Currently has 28 passing tests from Stories 2.2-2.3.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>fixture</kind>
+        <symbol>gaussian_function</symbol>
+        <lines>N/A</lines>
+        <reason>Pytest fixture providing GaussianTranslation instance for testing</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="numpy" version=">=2.3.5">Numerical computation, float64 precision, np.clip for bounds enforcement, vectorized function evaluation</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - step() must return exactly 4 values in this order: (observation, reward, done, info)
+    - Action validation error message MUST use exact format: "Invalid action {action}. Must be 0 (left), 1 (stay), or 2 (right)"
+    - All state updates (position, cumulative_reward, timestep) must happen atomically within step() method
+    - Position must be clamped using np.clip(position, bounds[0], bounds[1])
+    - Reward must be extracted as scalar float from function.evaluate() array return
+    - Float64 precision must be maintained for cumulative_reward
+    - info dict must be JSON-serializable (use float() conversion for numpy types)
+    - Must call _get_observation() AFTER state updates to get current observation
+    - done flag must be boolean type (timestep >= episode_length)
+    - No state copying or unnecessary object creation (performance requirement)
+    - Import ACTION_LEFT, ACTION_STAY, ACTION_RIGHT from funcbench.agent module
+    - NumPy-style docstring with Parameters, Returns, Raises, and Examples sections required
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Environment.step(action)</name>
+      <kind>method signature</kind>
+      <signature>def step(self, action: int) -> tuple[dict, float, bool, dict]</signature>
+      <path>src/funcbench/environment.py</path>
+    </interface>
+    <interface>
+      <name>Function2D.evaluate(x, t)</name>
+      <kind>abstract method</kind>
+      <signature>def evaluate(self, x: np.ndarray, t: float) -> np.ndarray</signature>
+      <path>src/funcbench/function.py</path>
+    </interface>
+    <interface>
+      <name>Function2D.get_perfect_score(episode_length)</name>
+      <kind>abstract method</kind>
+      <signature>def get_perfect_score(self, episode_length: int) -> float</signature>
+      <path>src/funcbench/function.py</path>
+    </interface>
+    <interface>
+      <name>Environment._get_observation()</name>
+      <kind>private method</kind>
+      <signature>def _get_observation(self) -> dict</signature>
+      <path>src/funcbench/environment.py</path>
+    </interface>
+    <interface>
+      <name>Action Constants</name>
+      <kind>module constants</kind>
+      <signature>ACTION_LEFT = 0, ACTION_STAY = 1, ACTION_RIGHT = 2</signature>
+      <path>src/funcbench/agent.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      - Use pytest framework with fixtures from conftest.py
+      - Test file: tests/test_environment.py (add new test functions)
+      - Use gaussian_function fixture for Function2D instance
+      - Follow existing test patterns from Stories 2.2-2.3
+      - Test both happy path and error cases (invalid actions)
+      - Verify all return types and dict structures
+      - Use timeit or pytest-benchmark for performance validation
+      - Ensure deterministic tests (no random behavior without seeds)
+      - All tests must pass before story completion
+    </standards>
+    <locations>
+      - tests/test_environment.py (primary test location)
+      - tests/conftest.py (fixtures)
+    </locations>
+    <ideas>
+      - test_step_action_validation: Verify ValueError raised for actions not in [0, 1, 2]
+      - test_step_action_left: Create env at position 10, take ACTION_LEFT, verify position decreases by step_size
+      - test_step_action_stay: Take ACTION_STAY, verify position unchanged
+      - test_step_action_right: Take ACTION_RIGHT, verify position increases by step_size
+      - test_step_position_clamping_left_bound: Position at left bound, take ACTION_LEFT, verify stays at bound
+      - test_step_position_clamping_right_bound: Position at right bound, take ACTION_RIGHT, verify stays at bound
+      - test_step_reward_calculation: Verify reward matches function.evaluate() at new position
+      - test_step_cumulative_reward: Take multiple steps, verify cumulative_reward = sum of step rewards
+      - test_step_timestep_advancement: Take step, verify timestep incremented by 1
+      - test_step_done_flag_false: Early in episode, verify done = False
+      - test_step_done_flag_true: At episode_length, verify done = True
+      - test_step_return_signature: Verify step returns 4-tuple with correct types (dict, float, bool, dict)
+      - test_step_observation_updated: Verify observation reflects new state after step
+      - test_step_info_dict_structure: Verify info has 'cumulative_reward' and 'perfect_score' keys
+      - test_step_performance: Use timeit to verify step() completes in < 10ms
+      - test_step_sequence: Take multiple steps with different actions, verify state consistency
+    </ideas>
+  </tests>
+</story-context>

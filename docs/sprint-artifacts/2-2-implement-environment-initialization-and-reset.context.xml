@@ -1,0 +1,291 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2</storyId>
+    <title>Implement Environment Initialization and Reset</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-17</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-2-implement-environment-initialization-and-reset.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>researcher</asA>
+    <iWant>an Environment class that manages episode lifecycle</iWant>
+    <soThat>I can run repeatable experiments with configurable parameters</soThat>
+    <tasks>
+- Create src/funcbench/environment.py module
+  - Import necessary modules (Function2D from function.py, numpy)
+  - Follow Architecture import order: stdlib → third-party → local
+  - Define Environment class with PascalCase naming
+- Implement Environment.__init__ method
+  - Accept all required parameters with type hints and defaults
+  - Store configuration as instance attributes
+  - Initialize self.state dict with correct keys and types
+  - Add class-level and method-level NumPy-style docstrings
+- Implement Environment.reset() method
+  - Reset position to 0.0 using np.float64
+  - Reset timestep to 0, cumulative_reward to 0.0, clear history
+  - Generate initial observation dict by calling _get_observation()
+  - Return observation dict with required keys per Architecture
+- Create placeholder _get_observation() method
+  - Define as private method
+  - Return observation dict with all required keys (dummy values for now)
+  - Add TODO comment for Story 2.3 full implementation
+- Validate implementation against Architecture patterns
+- Update src/funcbench/__init__.py exports
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**AC1:** Environment class created in src/funcbench/environment.py with __init__ accepting parameters: function (Function2D), episode_length (int=1000), observation_radius (float=5.0), n_gradient_samples (int=20), step_size (float=1.0), render_mode (bool=False)
+
+**AC2:** __init__ initializes internal state dict with keys: position (np.float64), timestep (int), cumulative_reward (np.float64), history (list)
+
+**AC3:** reset() method initializes position to 0.0, timestep to 0, cumulative_reward to 0.0, clears history list, and returns initial observation dict
+
+**AC4:** reset() uses float64 for all numeric state values and returns observation dict following Architecture specification (keys: position, reward, gradient, gradient_positions, timestep)
+
+**AC5:** Configuration parameters are stored as instance attributes
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Environment API Contract</section>
+        <snippet>Environment class implements reset(), step(), run() methods per Architecture API specification. Follows Gym-like API (ADR-004) with step returning (observation, reward, done, info) tuple. State is centralized dict pattern for easy serialization.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Data Architecture - Episode State</section>
+        <snippet>Episode State dict contains: position (np.float64 - agent x-coordinate), timestep (int - current time 0 to episode_length-1), cumulative_reward (np.float64 - running sum), history (list of tuples)</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Consistency Rules - Observation Dictionary Keys</section>
+        <snippet>Observation dict MUST have exact keys: 'position' (float), 'reward' (float), 'gradient' (np.ndarray), 'gradient_positions' (np.ndarray), 'timestep' (int). These keys are contractually required by Agent interface.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>AC2: Environment Initialization</section>
+        <snippet>Environment.__init__ accepts parameters with type hints and default values. Initializes internal state dict with position, timestep, cumulative_reward, history. Stores configuration as instance attributes.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>AC3: Reset Functionality</section>
+        <snippet>reset() initializes position to 0.0 (center of bounds), resets timestep to 0, resets cumulative_reward to 0.0, clears history list, returns initial observation dict following Architecture specification.</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>FuncBench PRD</title>
+        <section>FR16: Episode Management</section>
+        <snippet>System can initialize new episodes with configurable episode length (timesteps)</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>FuncBench PRD</title>
+        <section>FR20: Reset Capability</section>
+        <snippet>System can reset environment state to start new episodes</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>FuncBench PRD</title>
+        <section>FR59-FR61: Configuration</section>
+        <snippet>Users can configure function parameters, observation radius (fog-of-war size), and episode length (number of timesteps)</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>module</kind>
+        <symbol>Function2D</symbol>
+        <lines>full-file</lines>
+        <reason>Abstract base class required for Environment.__init__ type hint. Environment stores Function2D instance and calls evaluate() and get_perfect_score() methods</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>module</kind>
+        <symbol>Agent, ACTION_LEFT, ACTION_STAY, ACTION_RIGHT</symbol>
+        <lines>full-file</lines>
+        <reason>Agent interface defines observation dict contract that Environment must fulfill. Action constants will be used in Story 2.4 step() implementation. Observation dict keys must match Agent expectations.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/__init__.py</path>
+        <kind>module</kind>
+        <symbol>package exports</symbol>
+        <lines>full-file</lines>
+        <reason>Need to add Environment to package exports. Follow pattern established for Agent and Function2D exports. Maintain alphabetical ordering in __all__ list.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_agent.py</path>
+        <kind>test</kind>
+        <symbol>test patterns</symbol>
+        <lines>full-file</lines>
+        <reason>Reference for test structure and patterns. Story 2.8 will create test_environment.py following similar structure with pytest fixtures.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>test</kind>
+        <symbol>pytest fixtures</symbol>
+        <lines>full-file</lines>
+        <reason>May need to add environment fixtures for testing. Currently has gaussian_function fixture which Environment will use.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="numpy" version=">=2.3.5" purpose="float64 precision, array operations for gradient sampling (Story 2.3)" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+**Naming Conventions (Architecture):**
+- Class names: PascalCase (Environment)
+- Method names: snake_case (reset, _get_observation)
+- Private methods: prefix with underscore (_get_observation)
+
+**Type Hints Mandatory (Architecture):**
+- All function signatures must have type hints
+- Use proper types: Function2D, int, float, bool, dict
+
+**NumPy-style Docstrings Required (Architecture):**
+- Class-level docstring explaining purpose
+- Method docstrings with Parameters, Returns, Raises sections
+- Follow examples from Architecture documentation
+
+**Float64 Precision (NFR11):**
+- Position: np.float64(0.0)
+- Cumulative reward: np.float64(0.0)
+- Critical for reproducibility requirement
+
+**State Dict Pattern (Architecture):**
+- Single centralized state dict
+- Never allow external mutation
+- Clear structure for serialization
+
+**Import Order (Architecture):**
+```python
+# Standard library
+from typing import Dict, Tuple, Optional
+
+# Third-party
+import numpy as np
+
+# Local
+from funcbench.function import Function2D
+```
+
+**Placeholder for Story 2.3:**
+- _get_observation() returns observation dict with required keys
+- Use dummy values: gradient=np.array([]), reward=0.0
+- Add TODO comment for full implementation in Story 2.3
+  </constraints>
+
+  <interfaces>
+**Environment.__init__ signature:**
+```python
+def __init__(
+    self,
+    function: Function2D,
+    episode_length: int = 1000,
+    observation_radius: float = 5.0,
+    n_gradient_samples: int = 20,
+    step_size: float = 1.0,
+    render_mode: bool = False
+) -> None:
+```
+
+**Environment.reset() signature:**
+```python
+def reset(self) -> dict:
+    """Start new episode, reset state, return initial observation.
+
+    Returns
+    -------
+    dict
+        Initial observation with keys: position, reward, gradient, gradient_positions, timestep
+    """
+```
+
+**Environment._get_observation() signature (placeholder for Story 2.3):**
+```python
+def _get_observation(self) -> dict:
+    """Generate observation dict from current state.
+
+    Returns
+    -------
+    dict
+        Observation containing: position, reward, gradient, gradient_positions, timestep
+
+    Notes
+    -----
+    Full implementation in Story 2.3. Currently returns placeholder values.
+    """
+```
+
+**State dict structure:**
+```python
+self.state = {
+    'position': np.float64,         # Agent x-coordinate
+    'timestep': int,                # Current time (0 to episode_length-1)
+    'cumulative_reward': np.float64, # Running sum of rewards
+    'history': list[tuple]          # [(timestep, position, reward, action), ...]
+}
+```
+
+**Observation dict structure (contract with Agent):**
+```python
+observation = {
+    'position': float,               # Current agent x-coordinate
+    'reward': float,                 # Reward at current position and time
+    'gradient': np.ndarray,          # Local function samples
+    'gradient_positions': np.ndarray, # X-coordinates where samples are
+    'timestep': int                  # Current timestep
+}
+```
+  </interfaces>
+
+  <tests>
+    <standards>
+Use pytest framework per Architecture testing decisions. Test float64 precision explicitly (reproducibility requirement). Validate state transitions and observation dict structure. Create fixtures in conftest.py for reusable test objects. Follow test patterns established in test_agent.py.
+    </standards>
+
+    <locations>
+tests/test_environment.py (Story 2.8 will create)
+tests/conftest.py (may add environment fixtures)
+    </locations>
+
+    <ideas>
+**Test Environment Initialization (AC1, AC2):**
+- test_environment_initialization_default_params() - verify default values
+- test_environment_initialization_custom_params() - verify custom values stored
+- test_state_dict_structure() - verify state dict has correct keys and types
+- test_configuration_attributes() - verify all params stored as instance attributes
+
+**Test Reset Functionality (AC3, AC4, AC5):**
+- test_reset_initializes_position() - position = 0.0 (float64)
+- test_reset_initializes_timestep() - timestep = 0
+- test_reset_initializes_cumulative_reward() - cumulative_reward = 0.0 (float64)
+- test_reset_clears_history() - history = []
+- test_reset_returns_observation_dict() - observation has required keys
+- test_observation_dict_structure() - verify keys: position, reward, gradient, gradient_positions, timestep
+- test_multiple_resets() - calling reset() multiple times works correctly
+
+**Test State Dict (AC2):**
+- test_state_dict_float64_types() - position and cumulative_reward are np.float64
+- test_state_dict_keys() - verify exact keys match specification
+
+**Integration with Dependencies:**
+- test_environment_accepts_function2d() - can initialize with GaussianTranslation
+- test_environment_stores_function_reference() - self.function is accessible
+    </ideas>
+  </tests>
+</story-context>

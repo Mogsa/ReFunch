@@ -1,0 +1,198 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>1</storyId>
+    <title>Implement Agent Abstract Base Class and Action Constants</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-17</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-1-implement-agent-abstract-base-class-and-action-constants.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>researcher</asA>
+    <iWant>a standardized agent interface for implementing different AI approaches</iWant>
+    <soThat>I can easily swap between agent implementations</soThat>
+    <tasks>
+      - Create src/funcbench/agent.py module
+        - Define action constants: ACTION_LEFT=0, ACTION_STAY=1, ACTION_RIGHT=2
+        - Import necessary modules (abc module for abstract base class)
+        - Follow Architecture import order: stdlib → third-party → local
+      - Implement Agent abstract base class
+        - Create Agent class inheriting from ABC
+        - Add class-level NumPy-style docstring explaining agent interface purpose
+        - Implement abstract method: get_action(observation: dict) -> int with @abstractmethod decorator
+        - Add comprehensive NumPy-style docstring to get_action() documenting observation dict structure
+        - Document that return value must be 0, 1, or 2 corresponding to actions
+      - Add type hints and documentation
+        - Type hint observation parameter as dict
+        - Type hint return value as int
+        - Verify PascalCase for Agent class name
+        - Verify snake_case for get_action method name
+        - Include Parameters, Returns, and Raises sections in docstring
+      - Validate implementation against Architecture patterns
+        - Check imports follow stdlib → third-party → local order
+        - Verify NumPy-style docstring format matches Architecture examples
+        - Confirm naming conventions match Architecture specification
+        - Verify action constants use exact integer codes per Architecture consistency rule
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    - Agent ABC exists in src/funcbench/agent.py
+    - Contains abstract method get_action(observation: dict) -> int
+    - Action constants defined: ACTION_LEFT=0, ACTION_STAY=1, ACTION_RIGHT=2
+    - Type hints present on all method signatures
+    - NumPy-style docstrings explain observation dict structure
+    - Observation dict structure documented as: {'position': float, 'reward': float, 'gradient': np.ndarray, 'gradient_positions': np.ndarray, 'timestep': int}
+    - get_action() must return 0, 1, or 2 (left/stay/right)
+    - Class follows Architecture naming conventions (PascalCase for Agent, snake_case for methods)
+    - File includes complete docstrings and type hints
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>API Contracts - Agent</section>
+        <snippet>Agent interface must enforce get_action(observation) → int contract. Action space uses exact integer codes: ACTION_LEFT=0, ACTION_STAY=1, ACTION_RIGHT=2 (Architecture consistency rule). Observation dict keys must match specification exactly.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Consistency Rules - Action Space</section>
+        <snippet>ALWAYS use these integer codes: ACTION_LEFT = 0, ACTION_STAY = 1, ACTION_RIGHT = 2. These exact codes are mandatory across the system.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Observation Dictionary Keys</section>
+        <snippet>ALWAYS use these exact keys: observation = {'position': float, 'reward': float, 'gradient': np.ndarray, 'gradient_positions': np.ndarray, 'timestep': int}</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Naming Conventions</section>
+        <snippet>Classes: PascalCase (e.g., Agent, GaussianTranslation). Methods: snake_case (e.g., get_action). Constants: UPPER_SNAKE_CASE (e.g., ACTION_LEFT).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Docstring Format</section>
+        <snippet>Use NumPy-style docstrings with Parameters, Returns, and Examples sections. Type hints are mandatory for all function signatures.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>FuncBench - Epic Breakdown</title>
+        <section>Story 2.1 - Implement Agent Abstract Base Class and Action Constants</section>
+        <snippet>As a researcher, I want a standardized agent interface for implementing different AI approaches, so that I can easily swap between agent implementations. Prerequisites: Epic 1 complete (Function system exists).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>AC1: Agent Abstract Base Class Implemented</section>
+        <snippet>Agent ABC exists in src/funcbench/agent.py. Contains abstract method get_action(observation: dict) -> int. Action constants defined: ACTION_LEFT=0, ACTION_STAY=1, ACTION_RIGHT=2. Type hints present on all method signatures.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>Data Models and Contracts - Action Constants</section>
+        <snippet>ACTION_LEFT = 0 (Move left by step_size), ACTION_STAY = 1 (Stay at current position), ACTION_RIGHT = 2 (Move right by step_size). These are module-level constants in src/funcbench/agent.py.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/prd.md</path>
+        <title>FuncBench - Product Requirements Document</title>
+        <section>FR8-FR15: Agent System</section>
+        <snippet>Agents can take one of three actions (move left, move right, stay). Agent receives observation including current reward, local gradient information, and visual snapshot. Agents implemented via abstract interface for different AI architectures.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/funcbench/__init__.py</path>
+        <kind>package initialization</kind>
+        <symbol>__init__</symbol>
+        <lines>all</lines>
+        <reason>Shows how Agent will be exported in public API (will need to add Agent to __all__ list after implementation)</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/function.py</path>
+        <kind>module</kind>
+        <symbol>Function2D</symbol>
+        <lines>all</lines>
+        <reason>Example of abstract base class pattern using ABC and @abstractmethod - similar pattern needed for Agent</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_function.py</path>
+        <kind>test module</kind>
+        <symbol>TestGaussianEvaluation, TestPerfectScoreCalculation, etc.</symbol>
+        <lines>all</lines>
+        <reason>Shows project testing patterns: pytest test classes, NumPy testing patterns, type checking, performance validation</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="abc" version="stdlib">Abstract base class support (ABC, abstractmethod)</package>
+      </python>
+      <dev>
+        <package name="pytest" version=">=8.0.0">Testing framework</package>
+      </dev>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - File must be named agent.py (snake_case per Architecture)
+    - No dependencies on other FuncBench modules (pure abstract base class)
+    - Only imports from Python standard library (abc module)
+    - Action constants must use exact integers: 0, 1, 2 (not enums, not strings)
+    - Observation dict keys must match Architecture specification exactly
+    - Type hints are mandatory for all method signatures
+    - NumPy-style docstrings required (Parameters, Returns, Raises sections)
+    - Agent class name: PascalCase (Agent)
+    - Method name: snake_case (get_action)
+    - Constants: UPPER_SNAKE_CASE (ACTION_LEFT, ACTION_STAY, ACTION_RIGHT)
+    - Import order: stdlib → third-party → local (only stdlib needed for this file)
+    - Abstract method must raise NotImplementedError or use pass
+    - Must follow src/ layout: src/funcbench/agent.py
+    - This file will grow in future epics (RandomAgent in Epic 3, HumanAgent in Epic 5)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Agent.get_action</name>
+      <kind>abstract method signature</kind>
+      <signature>def get_action(self, observation: dict) -> int</signature>
+      <path>src/funcbench/agent.py (to be created)</path>
+      <description>Abstract method that all agent implementations must define. Takes observation dict with keys: position, reward, gradient, gradient_positions, timestep. Returns integer action code: 0 (left), 1 (stay), or 2 (right).</description>
+    </interface>
+    <interface>
+      <name>Action Constants</name>
+      <kind>module-level constants</kind>
+      <signature>ACTION_LEFT = 0, ACTION_STAY = 1, ACTION_RIGHT = 2</signature>
+      <path>src/funcbench/agent.py (to be created)</path>
+      <description>Module-level integer constants defining the action space. These will be imported by Environment and agent implementations.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest framework with test classes organized by functionality (TestClassName pattern). Follow NumPy testing patterns from test_function.py: np.isclose() for float comparisons, np.testing.assert_array_equal() for arrays, isinstance() for type checking. Each test method should have descriptive docstring. Use assert statements with helpful error messages. Test both happy path and edge cases. Verify type hints and docstrings are present (can use introspection).
+    </standards>
+    <locations>
+      tests/ - all test files
+      tests/test_agents.py - will be created in Story 2.8 for agent interface tests
+      tests/conftest.py - will be created in Story 2.8 for shared fixtures (mock agent)
+    </locations>
+    <ideas>
+      - AC1: Test that Agent is truly abstract (cannot be instantiated directly, should raise TypeError)
+      - AC1: Test that subclass without get_action() cannot be instantiated (abstract method enforcement)
+      - AC2: Test action constants have correct values (ACTION_LEFT==0, ACTION_STAY==1, ACTION_RIGHT==2)
+      - AC2: Test action constants are integers (not floats, not strings)
+      - AC5: Test that type hints are present on get_action method (use inspect module)
+      - AC5: Test that docstring is present and contains observation dict structure documentation
+      - Integration: Create mock agent for testing Environment (conftest.py fixture)
+      - Integration: Test that Environment can use mock agent implementation
+      Note: Most agent testing will be in Story 2.8 (Create Environment Unit Tests) which will create test_agents.py
+    </ideas>
+  </tests>
+</story-context>

@@ -1,0 +1,285 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>3</storyId>
+    <title>Implement Observation Generation with Gradient Sampling</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-17</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-3-implement-observation-generation-with-gradient-sampling.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>researcher</asA>
+    <iWant>agents to receive local gradient information within observation radius</iWant>
+    <soThat>agents can learn from partial observability constraints</soThat>
+    <tasks>
+- Replace placeholder _get_observation() implementation (AC: #1, #2)
+  - Remove TODO comment and dummy values
+  - Calculate observation window: [position - radius, position + radius]
+  - Generate n_gradient_samples points using np.linspace(window_left, window_right, n_gradient_samples)
+  - Clip sample positions to function bounds using np.clip(positions, bounds[0], bounds[1])
+
+- Implement gradient function evaluation (AC: #2, #3)
+  - Call function.evaluate(gradient_positions, current_timestep) for vectorized evaluation
+  - Ensure result is float64 numpy array
+  - Verify array shape matches n_gradient_samples
+  - Store result as 'gradient' in observation dict
+
+- Implement reward calculation (AC: #3)
+  - Evaluate function at current agent position using function.evaluate(position, timestep)
+  - Extract scalar reward value (first element if array returned)
+  - Store as float (float64) in observation dict
+  - Ensure reward is single float, not array
+
+- Build complete observation dictionary (AC: #1, #4, #5, #6)
+  - position: self.state['position'] as float
+  - reward: calculated reward value as float
+  - gradient: function values array (shape: n_gradient_samples)
+  - gradient_positions: sample x-coordinates array (shape: n_gradient_samples)
+  - timestep: self.state['timestep'] as int
+  - Verify all arrays use float64 dtype
+  - Verify shapes: gradient and gradient_positions both (n_gradient_samples,)
+
+- Validate performance requirements (AC: #7)
+  - Profile _get_observation() execution time
+  - Ensure < 5ms for default 20 samples
+  - Verify vectorized function call (single evaluate() call for all samples)
+  - Document any performance considerations in docstring
+
+- Update and validate tests (AC: #1-7)
+  - Update test_observation_dict_structure to verify real gradient arrays
+  - Update test_observation_dict_types to check float64 dtypes
+  - Add test_observation_gradient_sampling to verify gradient sampling logic
+  - Add test_observation_reward_calculation to verify reward computation
+  - Add test_observation_performance to verify < 5ms execution
+  - Run all tests and ensure they pass
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**Given** Environment class from Story 2.2
+**When** I implement _get_observation() private method
+**Then** it generates observation dict with all required keys:
+- `position`: Current agent x-coordinate (float)
+- `reward`: Current reward at position (float)
+- `gradient`: NumPy array of function samples within observation radius
+- `gradient_positions`: NumPy array of x-coordinates where samples were taken
+- `timestep`: Current timestep (int)
+
+**And** gradient sampling:
+- Creates n_gradient_samples points uniformly within [position - radius, position + radius]
+- Evaluates function at all sample points using vectorized NumPy call
+- Clips sample positions to respect function bounds
+- Uses np.linspace for uniform sampling
+
+**And** current reward is calculated by evaluating function at agent position
+
+**And** all numeric values use float64 precision
+
+**And** gradient array shape is (n_gradient_samples,)
+
+**And** gradient_positions array shape is (n_gradient_samples,)
+
+**And** method completes in < 5ms for 20 samples (vectorized evaluation)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>FuncBench - Product Requirements Document</title>
+        <section>Functional Requirements - Agent System (FR10-13)</section>
+        <snippet>FR10: Agent receives observation including current reward value at its position. FR11: Agent receives local gradient information within observation radius. FR13: Observation radius (fog-of-war size) is configurable per environment.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Data Architecture - Observation Dictionary</section>
+        <snippet>Observation dict keys MUST match specification exactly: position, reward, gradient, gradient_positions, timestep. All arrays use float64 dtype. Gradient sampling provides fog-of-war constraint for partial observability.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Performance Considerations - NFR2</section>
+        <snippet>Efficient Function Evaluation (< 1ms): System evaluates function at any (x, t) coordinate in < 1ms to support real-time queries. Use NumPy vectorized operations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>Detailed Design - Data Models - Observation Dictionary</section>
+        <snippet>observation dict returned by Environment to Agent contains: position (float), reward (float), gradient (np.ndarray of n_gradient_samples), gradient_positions (np.ndarray of n_gradient_samples), timestep (int). Keys MUST match Architecture specification exactly.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>Acceptance Criteria AC4 - Observation Generation</section>
+        <snippet>_get_observation() generates gradient samples within observation_radius using np.linspace for uniform sampling. Clips sample positions to function bounds. Evaluates function at all sample positions in single vectorized call. Returns dict with all required keys.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>FuncBench - Epic Breakdown</title>
+        <section>Story 2.3: Implement Observation Generation with Gradient Sampling</section>
+        <snippet>Acceptance Criteria specify gradient sampling creates n_gradient_samples points uniformly within observation window, evaluates function using vectorized NumPy call, clips positions to bounds, uses np.linspace for uniform sampling, completes in < 5ms for 20 samples.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file>
+        <path>src/funcbench/environment.py</path>
+        <kind>module</kind>
+        <symbol>Environment._get_observation</symbol>
+        <lines>182-225</lines>
+        <reason>Current placeholder implementation to be replaced. Contains TODO comment for Story 2.3. Method signature and docstring provide contract to maintain.</reason>
+      </file>
+      <file>
+        <path>src/funcbench/environment.py</path>
+        <kind>module</kind>
+        <symbol>Environment.state</symbol>
+        <lines>119-124</lines>
+        <reason>State dict containing position and timestep values needed for observation generation. Use self.state['position'] and self.state['timestep'].</reason>
+      </file>
+      <file>
+        <path>src/funcbench/environment.py</path>
+        <kind>module</kind>
+        <symbol>Environment.__init__</symbol>
+        <lines>83-115</lines>
+        <reason>Configuration attributes: self.observation_radius, self.n_gradient_samples, self.function (Function2D instance) used in gradient sampling implementation.</reason>
+      </file>
+      <file>
+        <path>src/funcbench/function.py</path>
+        <kind>module</kind>
+        <symbol>Function2D.evaluate</symbol>
+        <lines>27-51</lines>
+        <reason>Abstract method signature for vectorized function evaluation. Takes np.ndarray x and float t, returns np.ndarray of rewards. Must use for gradient sampling.</reason>
+      </file>
+      <file>
+        <path>src/funcbench/function.py</path>
+        <kind>module</kind>
+        <symbol>Function2D.bounds</symbol>
+        <lines>82-98</lines>
+        <reason>Property returning (left_bound, right_bound) tuple. Use self.function.bounds to clip gradient_positions to valid spatial domain.</reason>
+      </file>
+      <file>
+        <path>src/funcbench/function.py</path>
+        <kind>module</kind>
+        <symbol>GaussianTranslation.evaluate</symbol>
+        <lines>182-229</lines>
+        <reason>Concrete implementation showing vectorized evaluation pattern. Uses float64 precision, operates on entire arrays, returns np.ndarray matching input shape.</reason>
+      </file>
+      <file>
+        <path>tests/test_environment.py</path>
+        <kind>test</kind>
+        <symbol>test_observation_dict_structure</symbol>
+        <lines>151-164</lines>
+        <reason>Existing test verifying observation dict has required keys. Update to verify gradient arrays are non-empty after Story 2.3 implementation.</reason>
+      </file>
+      <file>
+        <path>tests/test_environment.py</path>
+        <kind>test</kind>
+        <symbol>test_observation_dict_types</symbol>
+        <lines>166-177</lines>
+        <reason>Existing test checking observation value types. Update to verify gradient and gradient_positions are float64 dtype np.ndarrays.</reason>
+      </file>
+      <file>
+        <path>tests/conftest.py</path>
+        <kind>test</kind>
+        <symbol>gaussian_function</symbol>
+        <lines>6-14</lines>
+        <reason>Pytest fixture providing GaussianTranslation instance for testing. Use for creating test environments.</reason>
+      </file>
+    </code>
+    <dependencies>
+      <python>
+        <package name="numpy" version=">=2.3.5">Numerical computation, vectorized operations, float64 precision</package>
+        <package name="pygame-ce" version=">=2.5.6">Not used in this story (reserved for Epic 4 visualization)</package>
+      </python>
+      <python-dev>
+        <package name="pytest" version=">=8.0.0">Test framework for unit tests</package>
+        <package name="matplotlib" version=">=3.10.7">Optional analysis/plotting (not needed for this story)</package>
+      </python-dev>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- **Observation Dict Contract**: Keys MUST be exactly: position, reward, gradient, gradient_positions, timestep (matches Agent interface requirement)
+- **Float64 Precision**: All numeric values must use np.float64 for reproducibility (NFR11)
+- **Vectorized Operations**: Use single function.evaluate() call for all gradient samples (no Python loops)
+- **Performance Target**: Complete execution in < 5ms for 20 samples (part of NFR3 episode performance budget)
+- **Bounds Enforcement**: Gradient positions must be clipped to function.bounds to prevent out-of-bounds evaluation
+- **NumPy-style Docstrings**: Maintain docstring format with Parameters, Returns, Notes, Examples sections
+- **Testing Requirement**: Update existing tests and add new tests for gradient sampling, reward calculation, and performance
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Function2D.evaluate</name>
+      <kind>method signature</kind>
+      <signature>def evaluate(self, x: np.ndarray, t: float) -> np.ndarray</signature>
+      <path>src/funcbench/function.py:27-51</path>
+      <usage>Call self.function.evaluate(gradient_positions, self.state['timestep']) for vectorized gradient sampling and self.function.evaluate(np.array([self.state['position']]), self.state['timestep']) for reward</usage>
+    </interface>
+    <interface>
+      <name>Function2D.bounds</name>
+      <kind>property</kind>
+      <signature>@property def bounds(self) -> tuple[float, float]</signature>
+      <path>src/funcbench/function.py:82-98</path>
+      <usage>Access via self.function.bounds to get (left_bound, right_bound) for clipping gradient_positions</usage>
+    </interface>
+    <interface>
+      <name>Environment.state</name>
+      <kind>instance attribute</kind>
+      <signature>self.state: Dict = {'position': np.float64, 'timestep': int, 'cumulative_reward': np.float64, 'history': list}</signature>
+      <path>src/funcbench/environment.py:119-124</path>
+      <usage>Access position via self.state['position'] and timestep via self.state['timestep'] for observation generation</usage>
+    </interface>
+    <interface>
+      <name>observation dictionary</name>
+      <kind>return value contract</kind>
+      <signature>{'position': float, 'reward': float, 'gradient': np.ndarray, 'gradient_positions': np.ndarray, 'timestep': int}</signature>
+      <path>Architecture specification, Agent interface contract</path>
+      <usage>Return dict from _get_observation() with exact keys. gradient and gradient_positions must be shape (n_gradient_samples,) with float64 dtype</usage>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Use pytest framework per Architecture standards. Test files in tests/ directory. Follow existing test patterns from test_environment.py with class-based organization (TestEnvironmentInitialization, TestEnvironmentReset, TestEnvironmentIntegration). Use pytest fixtures from conftest.py (gaussian_function). Validate float64 precision explicitly with isinstance(value, np.float64). Test both happy paths and edge cases (bounds clipping, shape verification). Performance tests should use timeit or pytest-benchmark for < 5ms validation.
+    </standards>
+    <locations>
+tests/test_environment.py (update existing tests, add new gradient sampling tests)
+tests/conftest.py (reuse gaussian_function fixture)
+    </locations>
+    <ideas>
+**AC1 (Observation dict keys)**: Update test_observation_dict_structure to verify gradient arrays are non-empty after implementation
+
+**AC2 (Gradient sampling)**: Add test_observation_gradient_sampling to verify:
+  - Gradient array length equals n_gradient_samples
+  - Gradient positions within observation window [position - radius, position + radius]
+  - Gradient positions clipped to function bounds when window extends beyond
+  - Uniform spacing between samples (np.linspace behavior)
+  - Gradient array shape is (n_gradient_samples,)
+  - gradient_positions array shape is (n_gradient_samples,)
+
+**AC3 (Reward calculation)**: Add test_observation_reward_calculation to verify:
+  - Reward matches function.evaluate at agent's position
+  - Reward is scalar float, not array
+  - Reward uses float64 precision
+
+**AC4 (Float64 precision)**: Update test_observation_dict_types to verify:
+  - gradient dtype is np.float64
+  - gradient_positions dtype is np.float64
+  - reward is float (converted from float64 array)
+
+**AC5-6 (Array shapes)**: Add shape assertions in gradient sampling test:
+  - assert gradient.shape == (env.n_gradient_samples,)
+  - assert gradient_positions.shape == (env.n_gradient_samples,)
+
+**AC7 (Performance)**: Add test_observation_performance:
+  - Use timeit to measure _get_observation() execution
+  - Assert average time < 5ms over 100 iterations
+  - Verify single vectorized function call (no loops)
+
+**Integration test**: Test with custom observation_radius and n_gradient_samples to ensure configuration flexibility
+    </ideas>
+  </tests>
+</story-context>

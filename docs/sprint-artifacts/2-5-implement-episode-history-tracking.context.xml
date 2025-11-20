@@ -1,0 +1,219 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>5</storyId>
+    <title>Implement Episode History Tracking</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-18</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-5-implement-episode-history-tracking.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>researcher</asA>
+    <iWant>episode history saved for replay and analysis</iWant>
+    <soThat>I can study agent behavior after episodes complete</soThat>
+    <tasks>
+- Modify step() method to append history entries (AC: #1, #2, #3, #7)
+  - After state updates and before generating observation
+  - Create tuple: (timestep, position, reward, action)
+  - Append to self.state['history']
+  - Ensure tuple is immutable (use tuple, not list)
+  - Verify chronological order (append at end, not insert)
+  - Test history storage completes in &lt; 1ms per step
+
+- Modify reset() method to clear history (AC: #4)
+  - Set self.state['history'] = [] in reset()
+  - Verify history is empty after reset() call
+  - Test reset clears history from previous episode
+
+- Implement get_history() method (AC: #5, #6)
+  - Create new public method: get_history()
+  - Return copy of history list (not reference): list(self.state['history'])
+  - Add type hint: -&gt; list[tuple[int, float, float, int]]
+  - Add NumPy-style docstring explaining return format
+  - Document tuple structure: (timestep, position, reward, action)
+  - Test returned value is a copy (mutations don't affect internal state)
+
+- Validate history does NOT include observations (AC: #7)
+  - Verify only minimal data stored: timestep, position, reward, action
+  - Do NOT store observation dict (contains gradient arrays)
+  - Calculate storage size: 4 values * 8 bytes = 32 bytes per step
+  - Compare to observation dict size (much larger with gradient arrays)
+
+- Add comprehensive tests (AC: #1-#8)
+  - test_history_append_on_step: Verify history appends on each step
+  - test_history_tuple_format: Verify entry is tuple with 4 elements
+  - test_history_chronological: Verify entries in order of execution
+  - test_history_reset_clears: Verify reset() clears history to empty list
+  - test_get_history_returns_copy: Verify get_history() returns copy, not reference
+  - test_get_history_format: Verify list of 4-tuples format
+  - test_history_no_observations: Verify observations not stored in history
+  - test_history_performance: Verify append completes in &lt; 1ms
+  - test_history_multi_step: Verify history accumulates over multiple steps
+  - Run all tests and ensure they pass
+
+- Update documentation (AC: #5, #6)
+  - Add get_history() docstring with NumPy-style format
+  - Document history tuple structure in Environment class docstring
+  - Add usage example showing history access pattern
+  - Note: History enables episode replay (FR28)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. step() appends history entry to state['history']: (timestep, position, reward, action)
+2. History entry uses tuple format for immutability
+3. History is stored chronologically (order of steps)
+4. reset() clears history list to empty
+5. Environment exposes get_history() method that returns copy of history list
+6. get_history() returns list of tuples: [(t, x, r, a), ...]
+7. History does not include observations (too large for storage)
+8. History storage completes in &lt; 1ms per step (simple list append)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/prd.md</path>
+        <title>FuncBench Product Requirements Document</title>
+        <section>Functional Requirements - Episode Management</section>
+        <snippet>FR21: System maintains episode history (timesteps, positions, rewards, actions). FR28: System provides episode replay capability for post-hoc analysis. History enables studying agent behavior patterns and validating learning curves.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Data Architecture - Episode State</section>
+        <snippet>Episode State contains history: list[tuple] with entries [(timestep, position, reward, action), ...]. Tuple format prevents accidental mutation. Store minimal data needed for replay - don't store full observations (gradient arrays too large).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC6: Episode History Tracking</section>
+        <snippet>step() appends (timestep, position, reward, action) tuple to history. History entries use immutable tuple format. History stored in chronological order. get_history() returns copy of history list (not reference). reset() clears history to empty list. Storage completes in &lt; 1ms per step.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>FuncBench Epic Breakdown</title>
+        <section>Epic 2 Story 2.5: Implement Episode History Tracking</section>
+        <snippet>History tracking enables post-hoc analysis and replay without re-running episodes. Stores (timestep, position, reward, action) tuples. Cleared on reset(). Accessible via get_history() which returns copy to prevent external mutation.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>class</kind>
+        <symbol>Environment</symbol>
+        <lines>18-388</lines>
+        <reason>Contains step() method (lines 268-387) where history appending needs to be added after state updates. Contains reset() method (lines 127-181) where history clearing already exists at line 178. State dict at lines 120-125 already initializes history list.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.step</symbol>
+        <lines>268-387</lines>
+        <reason>Need to add history append after state updates (between line 373 timestep increment and line 376 done check). Append tuple: (self.state['timestep'], self.state['position'], reward, action)</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.reset</symbol>
+        <lines>127-181</lines>
+        <reason>Already clears history at line 178: self.state['history'] = []. No changes needed for this AC.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>constants</kind>
+        <symbol>ACTION_LEFT, ACTION_STAY, ACTION_RIGHT</symbol>
+        <lines>11-13</lines>
+        <reason>Action constants already imported in environment.py. Used in step() method for position updates. History tuple includes action parameter which will be one of these constants.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_environment.py</path>
+        <kind>test suite</kind>
+        <symbol>test_environment</symbol>
+        <lines>1-</lines>
+        <reason>Existing test file with 90 passing tests. Need to add 9 new tests for history tracking: test_history_append_on_step, test_history_tuple_format, test_history_chronological, test_history_reset_clears, test_get_history_returns_copy, test_history_format, test_history_no_observations, test_history_performance, test_history_multi_step</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="Python" version="&gt;=3.9" />
+      </python>
+      <packages>
+        <package name="numpy" version="&gt;=2.3.5">For float64 precision in position and reward values stored in history tuples</package>
+        <package name="pytest" version="&gt;=8.0.0">Test framework for history tracking tests</package>
+      </packages>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- History tuple structure is contractually defined: (timestep: int, position: float, reward: float, action: int) - must not change
+- History must use tuple (immutable) not list or dict
+- History appended in chronological order - use append() not insert()
+- get_history() must return copy using list() constructor to prevent external mutation
+- History cleared on reset() - essential for multi-episode experiments
+- Do NOT store observation dicts in history (too large - contains gradient arrays)
+- Performance requirement: history append must complete in &lt; 1ms per step (simple list.append is sufficient)
+- History enables episode replay (FR28) - data must be complete and accurate
+- Float64 precision for position and reward values (consistency with state management)
+- Type hints required: get_history() -&gt; list[tuple[int, float, float, int]]
+- NumPy-style docstring required for get_history() method
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Environment.get_history</name>
+      <kind>public method</kind>
+      <signature>def get_history(self) -&gt; list[tuple[int, float, float, int]]</signature>
+      <path>src/funcbench/environment.py</path>
+      <description>Returns copy of episode history as list of (timestep, position, reward, action) tuples. Must return copy not reference to prevent external mutations affecting internal state.</description>
+    </interface>
+    <interface>
+      <name>Environment.state['history']</name>
+      <kind>internal state</kind>
+      <signature>list[tuple[int, float, float, int]]</signature>
+      <path>src/funcbench/environment.py</path>
+      <description>Internal history list storing episode records. Already initialized in __init__ at line 124. Cleared in reset() at line 178. Will be appended to in step() method.</description>
+    </interface>
+    <interface>
+      <name>History Tuple Structure</name>
+      <kind>data contract</kind>
+      <signature>(timestep: int, position: float, reward: float, action: int)</signature>
+      <path>Architecture specification</path>
+      <description>Immutable tuple format for history entries. Order and types are contractually required. Enables replay by capturing minimal state needed to reconstruct episode.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Use pytest framework per project standards. All tests in tests/test_environment.py. Use gaussian_function fixture from conftest.py. Follow existing test patterns from Story 2.4 (31 tests added). Test class organization by concern. Descriptive test names. Performance tests use timeit. Type validation tests check return types. Edge case coverage (empty history, single step, multiple episodes). Integration tests verify history across full episode execution.
+    </standards>
+    <locations>
+tests/test_environment.py - Add new test class TestHistoryTracking with 9 tests
+tests/conftest.py - Use existing gaussian_function fixture
+    </locations>
+    <ideas>
+**AC1-3: History Append and Format**
+- test_history_append_on_step: Execute step(), verify history length increases, verify last entry is tuple with 4 elements
+- test_history_tuple_format: Verify history entry is tuple (not list/dict), verify has 4 elements, verify element types (int, float, float, int)
+- test_history_chronological: Execute multiple steps with different actions, verify history entries match step sequence
+
+**AC4: Reset Clears History**
+- test_history_reset_clears: Execute steps to populate history, call reset(), verify history is empty list
+
+**AC5-6: get_history() Method**
+- test_get_history_returns_copy: Call get_history(), modify returned list, verify state['history'] unchanged (proves copy not reference)
+- test_get_history_format: Verify returns list, verify each element is 4-tuple, verify values match expectations
+
+**AC7: No Observations Stored**
+- test_history_no_observations: Verify history entries don't contain 'gradient' or 'gradient_positions' keys, verify storage size is minimal
+
+**AC8: Performance**
+- test_history_performance: Use timeit to measure step() execution with history append, verify &lt; 1ms per step
+
+**Integration:**
+- test_history_multi_step: Execute full 100-step episode, verify history length = 100, verify all entries valid, verify chronological order preserved
+    </ideas>
+  </tests>
+</story-context>

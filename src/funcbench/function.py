@@ -265,3 +265,53 @@ class GaussianTranslation(Function2D):
             (left_bound, right_bound) defining valid x-coordinate range.
         """
         return self._bounds
+
+    def get_config(self) -> dict:
+        """
+        Get function configuration parameters.
+
+        Returns complete function configuration as a dictionary for
+        reproducibility and experiment tracking. All values are converted
+        from NumPy types to Python types for JSON serialization.
+
+        Returns
+        -------
+        dict
+            Configuration dictionary with keys:
+
+            - 'mean_start' : float
+                Initial position of Gaussian peak at t=0
+            - 'velocity' : float
+                Translation speed (spatial units per timestep)
+            - 'sigma' : float
+                Standard deviation controlling peak width
+            - 'amplitude' : float
+                Peak height (maximum reward value)
+            - 'bounds' : tuple[float, float]
+                Spatial bounds (left, right) for valid movement range
+            - 'seed' : int or None
+                Random seed for reproducibility
+
+        Notes
+        -----
+        - All NumPy float64 values converted to Python float for JSON compatibility
+        - Enables exact function reconstruction for reproducible experiments
+        - Configuration can be saved alongside episode data
+
+        Examples
+        --------
+        >>> func = GaussianTranslation(velocity=0.1, sigma=1.0, seed=42)
+        >>> config = func.get_config()
+        >>> print(config['velocity'])
+        0.1
+        >>> import json
+        >>> json_str = json.dumps(config)  # Save configuration
+        """
+        return {
+            'mean_start': float(self.mean_start),
+            'velocity': float(self.velocity),
+            'sigma': float(self.sigma),
+            'amplitude': float(self.amplitude),
+            'bounds': (float(self._bounds[0]), float(self._bounds[1])),
+            'seed': self.seed
+        }

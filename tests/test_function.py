@@ -303,3 +303,181 @@ class TestGaussianTranslationEdgeCases:
 
         np.testing.assert_array_equal(result1, result2,
             "Same seed should produce identical results")
+
+
+class TestGaussianTranslationGetConfig:
+    """Test suite for GaussianTranslation.get_config() method."""
+
+    def test_get_config_returns_dict(self):
+        """get_config() returns dict type."""
+        func = GaussianTranslation()
+        config = func.get_config()
+
+        assert isinstance(config, dict), \
+            f"get_config() should return dict, got {type(config)}"
+
+    def test_get_config_contains_all_parameters(self):
+        """get_config() contains all GaussianTranslation parameters."""
+        func = GaussianTranslation()
+        config = func.get_config()
+
+        # Verify all required keys present
+        required_keys = {
+            'mean_start',
+            'velocity',
+            'sigma',
+            'amplitude',
+            'bounds',
+            'seed'
+        }
+        assert set(config.keys()) == required_keys, \
+            f"Missing keys: {required_keys - set(config.keys())}"
+
+    def test_get_config_values_match_constructor(self):
+        """get_config() values match constructor parameters."""
+        func = GaussianTranslation(
+            mean_start=-5.0,
+            velocity=0.2,
+            sigma=2.0,
+            amplitude=0.5,
+            bounds=(-15.0, 15.0),
+            seed=123
+        )
+        config = func.get_config()
+
+        # Verify all values match
+        assert config['mean_start'] == -5.0
+        assert config['velocity'] == 0.2
+        assert config['sigma'] == 2.0
+        assert config['amplitude'] == 0.5
+        assert config['bounds'] == (-15.0, 15.0)
+        assert config['seed'] == 123
+
+    def test_get_config_default_values(self):
+        """get_config() returns default values when not specified."""
+        func = GaussianTranslation()
+        config = func.get_config()
+
+        # Verify default values
+        assert config['mean_start'] == -10.0
+        assert config['velocity'] == 0.1
+        assert config['sigma'] == 1.0
+        assert config['amplitude'] == 1.0
+        assert config['bounds'] == (-20.0, 20.0)
+        assert config['seed'] is None
+
+    def test_get_config_json_serializable(self):
+        """get_config() returns JSON-serializable dict."""
+        import json
+
+        func = GaussianTranslation(seed=42)
+        config = func.get_config()
+
+        # Verify JSON serialization succeeds
+        json_str = json.dumps(config)
+        assert isinstance(json_str, str)
+        assert len(json_str) > 0
+
+    def test_get_config_json_round_trip(self):
+        """get_config() values preserved through JSON round-trip."""
+        import json
+
+        func = GaussianTranslation(
+            mean_start=-7.5,
+            velocity=0.15,
+            sigma=1.5,
+            amplitude=0.8,
+            bounds=(-25.0, 25.0),
+            seed=999
+        )
+        config = func.get_config()
+
+        # Round-trip through JSON
+        json_str = json.dumps(config)
+        config_loaded = json.loads(json_str)
+
+        # Verify all values preserved
+        assert config_loaded['mean_start'] == -7.5
+        assert config_loaded['velocity'] == 0.15
+        assert config_loaded['sigma'] == 1.5
+        assert config_loaded['amplitude'] == 0.8
+        assert config_loaded['bounds'] == [-25.0, 25.0]  # JSON converts tuple to list
+        assert config_loaded['seed'] == 999
+
+    def test_get_config_python_types(self):
+        """get_config() converts NumPy types to Python types."""
+        func = GaussianTranslation()
+        config = func.get_config()
+
+        # Verify all numeric values are Python types (not NumPy)
+        assert type(config['mean_start']) == float
+        assert type(config['velocity']) == float
+        assert type(config['sigma']) == float
+        assert type(config['amplitude']) == float
+
+        # bounds is tuple of floats
+        assert isinstance(config['bounds'], tuple)
+        assert type(config['bounds'][0]) == float
+        assert type(config['bounds'][1]) == float
+
+    def test_get_config_with_none_seed(self):
+        """get_config() handles None seed correctly."""
+        func = GaussianTranslation(seed=None)
+        config = func.get_config()
+
+        assert config['seed'] is None
+
+    def test_get_config_enables_reconstruction(self):
+        """Configuration from get_config() enables function reconstruction."""
+        # Create original function
+        original = GaussianTranslation(
+            mean_start=-8.0,
+            velocity=0.12,
+            sigma=1.2,
+            amplitude=0.9,
+            bounds=(-30.0, 30.0),
+            seed=456
+        )
+
+        # Get config
+        config = original.get_config()
+
+        # Reconstruct function from config
+        reconstructed = GaussianTranslation(
+            mean_start=config['mean_start'],
+            velocity=config['velocity'],
+            sigma=config['sigma'],
+            amplitude=config['amplitude'],
+            bounds=config['bounds'],
+            seed=config['seed']
+        )
+
+        # Verify reconstructed function behaves identically
+        x = np.linspace(-30, 30, 100)
+        original_values = original.evaluate(x, t=50.0)
+        reconstructed_values = reconstructed.evaluate(x, t=50.0)
+
+        np.testing.assert_array_equal(
+            original_values,
+            reconstructed_values,
+            err_msg="Reconstructed function should produce identical values"
+        )
+
+    def test_get_config_performance(self):
+        """get_config() completes quickly (< 1ms)."""
+        import timeit
+
+        func = GaussianTranslation()
+
+        # Time 1000 calls
+        time_taken = timeit.timeit(
+            lambda: func.get_config(),
+            number=1000
+        )
+
+        # Average time per call
+        avg_time = time_taken / 1000
+
+        # Verify < 1ms (0.001 seconds)
+        assert avg_time < 0.001, \
+            f"get_config() took {avg_time*1000:.3f}ms, expected < 1ms"

@@ -1,0 +1,268 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.6</storyId>
+    <title>Implement Run Method for Episode Execution</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-18</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-6-implement-run-method-for-episode-execution.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a researcher</asA>
+    <iWant>a convenient run() method that executes complete episodes</iWant>
+    <soThat>I can easily evaluate agents without manually writing episode loops</soThat>
+    <tasks>
+- Implement run(agent, render) method signature with type hints
+- Implement episode execution loop (reset, agent.get_action loop, return cumulative reward)
+- Add visualizer integration placeholder for Epic 4
+- Add agent exception handling with informative error messages
+- Add comprehensive NumPy-style docstring with examples
+- Add performance validation tests (< 2s for 1000 steps headless)
+- Add integration tests (RandomAgent, mock agent, render modes, exception handling)
+- Update Environment class integration and validate with existing methods
+- Run all tests and ensure >90% coverage for run() method
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**AC1:** run(agent, render) executes complete episode by calling reset(), looping agent.get_action() and step() until done, and returning final cumulative_reward
+
+**AC2:** run() returns float (final cumulative_reward from state)
+
+**AC3:** run() completes 1000-timestep episode in < 2 seconds (headless, render=False)
+
+**AC4:** run() handles agent exceptions gracefully with informative error messages including agent type and timestep
+
+**AC5:** If render=True but no visualizer, print warning and continue headless
+
+**AC6:** Method includes comprehensive NumPy-style docstring with Parameters, Returns, Raises, Notes, and Examples sections
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- Architecture Documentation -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Environment API Contract</section>
+        <snippet>run() is convenience method wrapping reset() + step() loop. Returns float (cumulative reward) for simple interface. Headless mode (render=False) for batch evaluation. Performance: < 2s for 1000 steps (NFR3).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Performance Considerations NFR3</section>
+        <snippet>NFR3: Fast Episode Execution (< 20s with visualization, < 2s headless). Target for Epic 2 (headless): Complete 1000-timestep episode in < 2 seconds without rendering.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>FuncBench Architecture</title>
+        <section>Data Flows - Episode Execution Flow</section>
+        <snippet>Episode loop: reset() → initialize state → loop[agent.get_action → step] → done → return cumulative_reward. Environment coordinates between agent and function via observations and actions.</snippet>
+      </doc>
+
+      <!-- Tech Spec Epic 2 -->
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Environment & Agent Execution</title>
+        <section>Story 2.6: Run Method</section>
+        <snippet>run(agent, render) executes complete episode. Calls reset(), loops calling agent.get_action() and step() until done. Returns final cumulative_reward as float. Completes 1000-step episode in < 2 seconds (headless mode). Handles agent exceptions gracefully. Visualizer integration is placeholder for Epic 4.</snippet>
+      </doc>
+
+      <!-- Epics Breakdown -->
+      <doc>
+        <path>docs/epics.md</path>
+        <title>FuncBench - Epic Breakdown</title>
+        <section>Story 2.6</section>
+        <snippet>As a researcher, I want a convenient run() method that executes complete episodes, So that I can easily evaluate agents without manually writing episode loops. Prerequisites: Stories 2.2-2.5 (Complete environment functionality).</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Environment class - existing methods to use -->
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>class</kind>
+        <symbol>Environment</symbol>
+        <lines>18-430</lines>
+        <reason>Main class where run() method will be added. Already has reset() and step() methods implemented in Stories 2.2-2.4.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.reset</symbol>
+        <lines>143-199</lines>
+        <reason>reset() is called at start of run() to initialize episode. Returns initial observation dict.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.step</symbol>
+        <lines>268-387</lines>
+        <reason>step(action) is called in episode loop. Returns (observation, reward, done, info) tuple. Loop continues until done=True.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/environment.py</path>
+        <kind>method</kind>
+        <symbol>Environment.get_history</symbol>
+        <lines>397-429</lines>
+        <reason>Can be used in tests to validate run() preserves episode history correctly.</reason>
+      </artifact>
+
+      <!-- Agent interface -->
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>class</kind>
+        <symbol>Agent</symbol>
+        <lines>16-112</lines>
+        <reason>Abstract base class. run() method accepts Agent parameter and calls agent.get_action(observation) in loop.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>method</kind>
+        <symbol>Agent.get_action</symbol>
+        <lines>42-112</lines>
+        <reason>Called in run() episode loop to get agent's action. May raise exceptions that run() must handle gracefully.</reason>
+      </artifact>
+      <artifact>
+        <path>src/funcbench/agent.py</path>
+        <kind>constant</kind>
+        <symbol>ACTION_LEFT, ACTION_STAY, ACTION_RIGHT</symbol>
+        <lines>11-13</lines>
+        <reason>Action constants returned by agent.get_action(). Values: 0, 1, 2.</reason>
+      </artifact>
+
+      <!-- Test infrastructure -->
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>file</kind>
+        <symbol>fixtures</symbol>
+        <lines>1-50</lines>
+        <reason>Contains pytest fixtures: gaussian_function, environment, mock_agent. Use these in run() tests.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_environment.py</path>
+        <kind>file</kind>
+        <symbol>TestEnvironment</symbol>
+        <lines>1-1085</lines>
+        <reason>Existing environment tests (100 tests passing). Add new TestRunMethod class for run() tests. Follow established patterns.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python version=">=3.9">
+        <package name="numpy" version=">=2.3.5">NumPy for numerical operations and array handling in observations</package>
+        <package name="pygame-ce" version=">=2.5.6">PyGame Community Edition for visualization (Epic 4 integration, placeholder in Story 2.6)</package>
+        <package name="pytest" version=">=8.0.0" dev="true">Testing framework for unit and integration tests</package>
+        <package name="matplotlib" version=">=3.10.7" dev="true" optional="true">Plotting library for analysis (not used in Story 2.6)</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- Follow Gym-like API pattern (Architecture ADR-004): step returns (obs, reward, done, info)
+- run() must return float (cumulative reward), not dict or tuple - simplest interface for researchers
+- Handle exceptions at API boundary with clear, informative error messages
+- Preserve episode state and history - don't mutate state unexpectedly
+- State dict is single source of truth - all state updates happen atomically within methods
+- Use NumPy-style docstrings with comprehensive documentation (Parameters, Returns, Raises, Notes, Examples)
+- Type hints mandatory on all method signatures
+- Performance requirement: 1000-step episode in < 2 seconds headless (NFR3)
+- Headless mode (render=False) has no visualization overhead
+- Visualizer integration is placeholder for Epic 4 - check hasattr(self, 'visualizer') before using
+- If render=True but visualizer=None, print warning once and continue headless
+- Agent exceptions must be caught and re-raised with context (agent type, timestep, original error)
+  </constraints>
+
+  <interfaces>
+    <!-- Agent.get_action() interface -->
+    <interface>
+      <name>Agent.get_action</name>
+      <kind>method signature</kind>
+      <signature>def get_action(self, observation: dict) -> int</signature>
+      <path>src/funcbench/agent.py:42-112</path>
+    </interface>
+
+    <!-- Environment.reset() interface -->
+    <interface>
+      <name>Environment.reset</name>
+      <kind>method signature</kind>
+      <signature>def reset(self) -> dict</signature>
+      <path>src/funcbench/environment.py:143-199</path>
+    </interface>
+
+    <!-- Environment.step() interface -->
+    <interface>
+      <name>Environment.step</name>
+      <kind>method signature</kind>
+      <signature>def step(self, action: int) -> tuple[dict, float, bool, dict]</signature>
+      <path>src/funcbench/environment.py:268-387</path>
+    </interface>
+
+    <!-- run() method to implement -->
+    <interface>
+      <name>Environment.run</name>
+      <kind>method signature (to implement)</kind>
+      <signature>def run(self, agent: Agent, render: bool = False) -> float</signature>
+      <path>src/funcbench/environment.py (new method)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Testing standards from Architecture and existing tests:
+- Use pytest framework with fixtures from conftest.py
+- Fixture-based test setup: gaussian_function, environment, mock_agent
+- Test classes organized by functionality (e.g., TestRunMethod for run() tests)
+- Test naming: test_<method>_<scenario> (e.g., test_run_completes_episode)
+- NumPy-style docstrings on test methods explaining what is being tested
+- Performance tests use timeit for timing validation
+- Edge case coverage: exception handling, multiple episodes, render modes
+- Integration tests validate cross-component interaction
+- All tests must pass before story completion
+- Test coverage target: >90% for new run() method
+    </standards>
+
+    <locations>
+tests/test_environment.py - Add new TestRunMethod class
+tests/conftest.py - Use existing fixtures (gaussian_function, environment, mock_agent)
+    </locations>
+
+    <ideas>
+**Unit Tests for run() Method:**
+1. test_run_completes_episode - Verify run() executes full episode and returns float
+2. test_run_returns_cumulative_reward - Verify return value matches state['cumulative_reward']
+3. test_run_calls_reset_and_step - Verify correct method sequence (reset → loop → return)
+4. test_run_preserves_history - Verify episode history tracked correctly during run()
+5. test_run_multiple_sequential_episodes - Verify run() can be called multiple times with reset between
+
+**Performance Tests:**
+6. test_run_performance_headless - Verify 1000-step episode completes in < 2 seconds (render=False)
+7. test_run_performance_small_episode - Verify 100-step episode completes quickly
+
+**Render Mode Tests:**
+8. test_run_render_false - Verify headless execution (render=False)
+9. test_run_render_true_no_visualizer - Verify warning printed when render=True but visualizer=None (use capsys fixture)
+10. test_run_render_warning_shown_once - Verify warning only printed once, not every run()
+
+**Exception Handling Tests:**
+11. test_run_agent_exception_handling - Create mock agent that raises exception, verify informative error with agent type and timestep
+12. test_run_agent_exception_preserves_state - Verify exception doesn't corrupt environment state
+
+**Integration Tests:**
+13. test_run_with_mock_agent - Full episode with simple mock agent (always goes right)
+14. test_run_with_random_agent - Full episode with RandomAgent (if available from Story 3.1)
+15. test_run_cumulative_reward_accuracy - Verify final reward equals sum of individual step rewards
+16. test_run_done_flag_termination - Verify episode stops when done=True
+
+Map to ACs:
+- AC1 (episode execution): Tests 1, 2, 3, 13, 14, 16
+- AC2 (returns float): Tests 1, 2, 15
+- AC3 (performance): Tests 6, 7
+- AC4 (exception handling): Tests 11, 12
+- AC5 (render warning): Tests 9, 10
+- AC6 (docstring): Code review validates comprehensive documentation
+    </ideas>
+  </tests>
+</story-context>
